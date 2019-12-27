@@ -1,0 +1,23 @@
+{
+  "name": "kahoot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "compile:sass": "node-sass sass/main.scss assets/style.css -w"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/900bce/game-for-end-of-year-party.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/900bce/game-for-end-of-year-party/issues"
+  },
+  "homepage": "https://github.com/900bce/game-for-end-of-year-party#readme",
+  "devDependencies": {
+    "node-sass": "^4.13.0"
+  }
+}

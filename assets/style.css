@@ -1,0 +1,76 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; }
+
+body {
+  font-family: 'Noto Sans TC', sans-serif;
+  margin: 0 auto; }
+
+.page {
+  min-height: 100vh;
+  width: 100%;
+  color: #fff; }
+
+.login-page {
+  background-color: #23bff0;
+  background-image: url("./img/mobileWebBackground01.png");
+  background-size: cover;
+  background-position: top;
+  padding: 1rem 0;
+  text-align: center; }
+  .login-page__title-img {
+    width: 90%;
+    height: auto;
+    margin-bottom: 3.75rem; }
+  .login-page .login-input input {
+    width: 90%;
+    padding: 1rem;
+    margin-bottom: 2rem;
+    font-size: 1.8rem;
+    font-weight: 800;
+    border-radius: .75rem;
+    color: #1686a9; }
+    .login-page .login-input input:focus {
+      outline: none; }
+  .login-page .login-bottom {
+    margin: 1rem 0 1.5rem 0; }
+    .login-page .login-bottom__notice {
+      font-size: 1.5rem;
+      margin: 5px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); }
+    .login-page .login-bottom__btn {
+      width: 90%;
+      height: 4.375rem;
+      background-color: #fff;
+      background-image: url("./img/mobileWebGoBtn.png");
+      background-position: center;
+      background-size: cover;
+      border: none;
+      border-radius: 18px;
+      box-shadow: 3px 3px 1px rgba(0, 0, 0, 0.5); }
+      .login-page .login-bottom__btn:disabled {
+        box-shadow: none;
+        background-image: url("./img/mobileWebGoBtnDisable.png"); }
+
+.waiting-page {
+  background-color: #23bff0;
+  background-image: url("./img/mobileWebBackground02.png");
+  background-size: cover;
+  text-align: center;
+  padding-top: 10rem;
+  position: relative; }
+  .waiting-page__welcome-img {
+    width: 90%;
+    height: auto; }
+  .waiting-page__name {
+    font-size: 2.2rem; }
+  .waiting-page__message {
+    position: absolute;
+    bottom: 20%;
+    left: 0;
+    right: 0;
+    font-size: 2rem; }
+
+.countdown-page {
+  background-color: #23bff0; }
