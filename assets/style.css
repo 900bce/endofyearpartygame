@@ -70,7 +70,98 @@ body {
     bottom: 20%;
     left: 0;
     right: 0;
-    font-size: 2rem; }
+    font-size: 2rem;
+    font-weight: 500; }
 
 .countdown-page {
   background-color: #23bff0; }
+
+.user {
+  padding: 1rem 1rem 0 1rem;
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.5rem; }
+
+.game-page {
+  background-color: #23bff0; }
+  .game-page__info {
+    padding: 1rem 1rem 0 1rem;
+    display: flex;
+    justify-content: space-between;
+    font-size: 1.5rem;
+    font-weight: 700; }
+    .game-page__info .game-count {
+      background-color: #1686a9;
+      font-size: 1.25rem;
+      padding: 3px 1.2rem;
+      border-radius: 1.2rem; }
+  .game-page .card-container {
+    padding: 1rem 0;
+    text-align: center; }
+    .game-page .card-container .game-card {
+      width: 46%;
+      margin: 1vw;
+      height: 18rem;
+      display: inline-block;
+      border: 3px solid #fff;
+      border-radius: 8px;
+      position: relative; }
+      .game-page .card-container .game-card img {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%); }
+      .game-page .card-container .game-card--A {
+        background-color: #f70320; }
+      .game-page .card-container .game-card--B {
+        background-color: #005ed7; }
+      .game-page .card-container .game-card--C {
+        background-color: #e29e06; }
+      .game-page .card-container .game-card--D {
+        background-color: #00910d; }
+
+.answer-page {
+  text-align: center;
+  padding-bottom: 1rem; }
+  .answer-page__content {
+    margin: 3rem auto;
+    font-size: 2rem;
+    font-weight: 700; }
+    .answer-page__content img {
+      margin-bottom: 2rem; }
+    .answer-page__content .text-img {
+      width: 100%; }
+  .answer-page__score-box {
+    margin: 0 2rem;
+    padding: 1.5rem;
+    font-size: 1.875rem;
+    font-weight: 500;
+    border-radius: 1rem; }
+    .answer-page__score-box--incorrect {
+      background-color: #ee384e; }
+    .answer-page__score-box--correct {
+      background-color: #66b50f; }
+  .answer-page--incorrect {
+    background-color: #fe576b; }
+  .answer-page--correct {
+    background-color: #7ed321; }
+
+.result-page {
+  background-color: #23bff0;
+  background-image: url("./img/mobileWebBackground03.png");
+  background-size: cover;
+  background-position: top;
+  text-align: center;
+  padding-bottom: 1rem; }
+  .result-page__content {
+    margin: 3rem auto;
+    font-size: 2rem;
+    font-weight: 700; }
+    .result-page__content img {
+      margin-bottom: 2rem; }
+    .result-page__content .text-img {
+      max-width: 100%; }
+    .result-page__content .final-score {
+      font-size: 4rem; }
+    .result-page__content .final-ranking {
+      font-size: 2.5rem; }
