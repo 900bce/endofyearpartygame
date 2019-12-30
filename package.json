@@ -8,15 +8,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/900bce/game-for-end-of-year-party.git"
+    "url": "git+https://github.com/900bce/endofyearpartygame.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/900bce/game-for-end-of-year-party/issues"
+    "url": "https://github.com/900bce/endofyearpartygame/issues"
   },
-  "homepage": "https://github.com/900bce/game-for-end-of-year-party#readme",
+  "homepage": "https://github.com/900bce/endofyearpartygame#readme",
   "devDependencies": {
     "node-sass": "^4.13.0"
   }

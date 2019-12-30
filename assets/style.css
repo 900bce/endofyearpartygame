@@ -10,7 +10,11 @@ body {
 .page {
   min-height: 100vh;
   width: 100%;
-  color: #fff; }
+  color: #fff;
+  display: none; }
+
+.show-page {
+  display: block; }
 
 .login-page {
   background-color: #23bff0;
@@ -74,27 +78,34 @@ body {
     font-weight: 500; }
 
 .countdown-page {
-  background-color: #23bff0; }
+  background-color: #23bff0;
+  text-align: center;
+  padding: 5rem 0; }
+  .countdown-page__title-img {
+    max-width: 100%; }
+  .countdown-page__number-img {
+    max-width: 70%;
+    margin-top: 3rem; }
 
 .user {
   padding: 1rem 1rem 0 1rem;
-  display: flex;
-  justify-content: space-between;
-  font-size: 1.5rem; }
+  font-size: 1.8rem; }
+  .user__id {
+    float: right; }
 
 .game-page {
   background-color: #23bff0; }
   .game-page__info {
     padding: 1rem 1rem 0 1rem;
-    display: flex;
-    justify-content: space-between;
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     font-weight: 700; }
     .game-page__info .game-count {
       background-color: #1686a9;
       font-size: 1.25rem;
       padding: 3px 1.2rem;
       border-radius: 1.2rem; }
+    .game-page__info .game-score {
+      float: right; }
   .game-page .card-container {
     padding: 1rem 0;
     text-align: center; }
@@ -121,12 +132,12 @@ body {
         background-color: #00910d; }
 
 .answer-page {
-  text-align: center;
   padding-bottom: 1rem; }
   .answer-page__content {
     margin: 3rem auto;
     font-size: 2rem;
-    font-weight: 700; }
+    font-weight: 700;
+    text-align: center; }
     .answer-page__content img {
       margin-bottom: 2rem; }
     .answer-page__content .text-img {
@@ -136,7 +147,8 @@ body {
     padding: 1.5rem;
     font-size: 1.875rem;
     font-weight: 500;
-    border-radius: 1rem; }
+    border-radius: 1rem;
+    text-align: center; }
     .answer-page__score-box--incorrect {
       background-color: #ee384e; }
     .answer-page__score-box--correct {
@@ -151,12 +163,12 @@ body {
   background-image: url("./img/mobileWebBackground03.png");
   background-size: cover;
   background-position: top;
-  text-align: center;
   padding-bottom: 1rem; }
   .result-page__content {
     margin: 3rem auto;
     font-size: 2rem;
-    font-weight: 700; }
+    font-weight: 700;
+    text-align: center; }
     .result-page__content img {
       margin-bottom: 2rem; }
     .result-page__content .text-img {

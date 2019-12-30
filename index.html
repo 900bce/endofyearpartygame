@@ -13,12 +13,12 @@
     <div class="page login-page">
       <img src="./assets/img/mobileWebGameTitle.png" class="login-page__title-img" alt="精誠智慧王">
       <div class="login-input">
-        <input type="text" placeholder="請輸入真實姓名">
-        <input type="text" placeholder="請輸入員工編號">
+        <input type="text" placeholder="請輸入真實姓名" id="user-name">
+        <input type="text" placeholder="請輸入員工編號" id="user-id">
       </div>
       <div class="login-bottom">
         <p class="login-bottom__notice">使用假姓名將喪失比賽資格!!</p>
-        <button class="login-bottom__btn" disabled></button>
+        <button class="login-bottom__btn" id="login-button" disabled>&nbsp;</button>
       </div>
     </div>
 
@@ -29,17 +29,18 @@
     </div>
 
     <div class="page countdown-page">
-
+      <img src="./assets/img/mobileTxtFinalCountdown.png" alt="countdown" class="countdown-page__title-img">
+      <img src="./assets/img/webFinalCountdown5.png" alt="5" class="countdown-page__number-img">
     </div>
 
     <div class="page game-page">
-      <div class="user">
-        <h3 class="info__name">王大明</h3>
-        <h3 class="info__id">1500203</h3>
-      </div>
+      <h3 class="user">
+        <span class="user__name">王大明</span>
+        <span class="user__id">1500203</span>
+      </h3>
       <div class="game-page__info">
-        <p class="game-count">1 of 10</p>
-        <p class="game-score">0分</p>
+        <span class="game-count">1 of 10</span>
+        <span class="game-score">0分</span>
       </div>
       <div class="card-container">
         <div class="game-card game-card--A">
@@ -58,10 +59,10 @@
     </div>
 
     <div class="page answer-page answer-page--incorrect">
-      <div class="user">
-        <h3 class="info__name">王大明</h3>
-        <h3 class="info__id">1500203</h3>
-      </div>
+      <h3 class="user">
+        <span class="user__name">王大明</span>
+        <span class="user__id">1500203</span>
+      </h3>
 
       <div class="answer-page__content">
         <img src="./assets/img/mobileTxtOoops.png" alt="Ooops..." class="text-img">
@@ -77,10 +78,10 @@
     </div>
 
     <div class="page answer-page answer-page--correct">
-      <div class="user">
-        <h3 class="info__name">王大明</h3>
-        <h3 class="info__id">1500203</h3>
-      </div>
+      <h3 class="user">
+        <span class="user__name">王大明</span>
+        <span class="user__id">1500203</span>
+      </h3>
 
       <div class="answer-page__content">
         <img src="./assets/img/mobileTxtExcellent.png" alt="Excellent" class="text-img">
@@ -96,11 +97,10 @@
     </div>
 
     <div class="page result-page">
-      <div class="user">
-        <h3 class="info__name">王大明</h3>
-        <h3 class="info__id">1500203</h3>
-      </div>
-
+      <h3 class="user">
+        <span class="user__name">王大明</span>
+        <span class="user__id">1500203</span>
+      </h3>
       <div class="result-page__content">
         <img src="./assets/img/mobileTxtFinalScore.png" alt="final score" class="text-img">
         <img src="./assets/img/mobielIconLike.png" alt="like icon">
@@ -108,5 +108,7 @@
         <p class="final-ranking">目前名次 1名</p>
       </div>
     </div>
+
+    <script src="./assets/main.js"></script>
   </body>
 </html>

@@ -20,6 +20,11 @@ body {
   min-height: 100vh;
   width: 100%;
   color: #fff;
+  display: none;
+}
+
+.show-page {
+  display: block;
 }
 
 .login-page {
@@ -111,13 +116,26 @@ body {
 
 .countdown-page {
   background-color: $color-blue-light;
+  text-align: center;
+  padding: 5rem 0;
+
+  &__title-img {
+    max-width: 100%;
+  }
+
+  &__number-img {
+    max-width: 70%;
+    margin-top: 3rem;
+  }
 }
 
 .user {
   padding: 1rem 1rem 0 1rem;
-  display: flex;
-  justify-content: space-between;
-  font-size: 1.5rem;
+  font-size: 1.8rem;
+
+  &__id {
+    float: right;
+  }
 }
 
 .game-page {
@@ -125,9 +143,7 @@ body {
 
   &__info {
     padding: 1rem 1rem 0 1rem;
-    display: flex;
-    justify-content: space-between;
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     font-weight: 700;
 
     .game-count {
@@ -135,6 +151,10 @@ body {
       font-size: 1.25rem;
       padding: 3px 1.2rem;
       border-radius: 1.2rem;
+    }
+
+    .game-score {
+      float: right;
     }
   }
 
@@ -178,13 +198,13 @@ body {
 }
 
 .answer-page {
-  text-align: center;
   padding-bottom: 1rem;
   
   &__content {
     margin: 3rem auto;
     font-size: 2rem;
     font-weight: 700;
+    text-align: center;
 
     img {
       margin-bottom: 2rem;
@@ -201,6 +221,7 @@ body {
     font-size: 1.875rem;
     font-weight: 500;
     border-radius: 1rem;
+    text-align: center;
 
     &--incorrect {
       background-color: $color-pink-dark;
@@ -225,14 +246,13 @@ body {
   background-image: url('./img/mobileWebBackground03.png');
   background-size: cover;
   background-position: top;
-
-  text-align: center;
   padding-bottom: 1rem;
   
   &__content {
     margin: 3rem auto;
     font-size: 2rem;
     font-weight: 700;
+    text-align: center;
 
     img {
       margin-bottom: 2rem;
