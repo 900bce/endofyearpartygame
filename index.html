@@ -13,8 +13,8 @@
     <div class="page login-page">
       <img src="./assets/img/mobileWebGameTitle.png" class="login-page__title-img" alt="精誠智慧王">
       <div class="login-input">
-        <input type="text" placeholder="請輸入真實姓名" id="user-name">
-        <input type="text" placeholder="請輸入員工編號" id="user-id">
+        <input type="text" placeholder="請輸入真實姓名" id="user-name-input">
+        <input type="text" placeholder="請輸入員工編號" id="user-id-input">
       </div>
       <div class="login-bottom">
         <p class="login-bottom__notice">使用假姓名將喪失比賽資格!!</p>
@@ -24,19 +24,29 @@
 
     <div class="page waiting-page">
       <img src="./assets/img/mobileTxtWelcome.png" alt="Welcome" class="waiting-page__welcome-img">
-      <h3 class="waiting-page__name">王大明</h3>
+      <h3 class="waiting-page__name"></h3>
       <p class="waiting-page__message">等待其他人加入遊戲...</p>
+      <button id="waiting-next-page" style="position: fixed; bottom: 0; right: 0;">下一頁</button>
     </div>
 
-    <div class="page countdown-page">
+    <!-- <div class="page countdown-page">
       <img src="./assets/img/mobileTxtFinalCountdown.png" alt="countdown" class="countdown-page__title-img">
       <img src="./assets/img/webFinalCountdown5.png" alt="5" class="countdown-page__number-img">
+    </div> -->
+
+    <div class="page question-page">
+      <h3 class="user">
+        <span class="user__name"></span>
+        <span class="user__id"></span>
+      </h3>
+      <h1>請觀看投影幕的題目</h1>
+      <button id="question-next-page" style="position: fixed; bottom: 0; right: 0;">下一頁</button>
     </div>
 
     <div class="page game-page">
       <h3 class="user">
-        <span class="user__name">王大明</span>
-        <span class="user__id">1500203</span>
+        <span class="user__name"></span>
+        <span class="user__id"></span>
       </h3>
       <div class="game-page__info">
         <span class="game-count">1 of 10</span>
@@ -58,10 +68,22 @@
       </div>
     </div>
 
+    <div class="page answering-page">
+      <h3 class="user">
+        <span class="user__name"></span>
+        <span class="user__id"></span>
+      </h3>
+      <h2>你的選擇</h2>
+      <div class="selected-card">
+        <img src="assets/img/spades.png" alt="card">
+      </div>
+      <h2>等候其他玩家答題...</h2>
+    </div>
+
     <div class="page answer-page answer-page--incorrect">
       <h3 class="user">
-        <span class="user__name">王大明</span>
-        <span class="user__id">1500203</span>
+        <span class="user__name"></span>
+        <span class="user__id"></span>
       </h3>
 
       <div class="answer-page__content">
@@ -79,8 +101,8 @@
 
     <div class="page answer-page answer-page--correct">
       <h3 class="user">
-        <span class="user__name">王大明</span>
-        <span class="user__id">1500203</span>
+        <span class="user__name"></span>
+        <span class="user__id"></span>
       </h3>
 
       <div class="answer-page__content">
@@ -98,8 +120,8 @@
 
     <div class="page result-page">
       <h3 class="user">
-        <span class="user__name">王大明</span>
-        <span class="user__id">1500203</span>
+        <span class="user__name"></span>
+        <span class="user__id"></span>
       </h3>
       <div class="result-page__content">
         <img src="./assets/img/mobileTxtFinalScore.png" alt="final score" class="text-img">

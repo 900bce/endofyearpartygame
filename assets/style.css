@@ -87,6 +87,14 @@ body {
     max-width: 70%;
     margin-top: 3rem; }
 
+.question-page {
+  background-color: #23bff0; }
+  .question-page h1 {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 500;
+    margin-top: 10rem; }
+
 .user {
   padding: 1rem 1rem 0 1rem;
   font-size: 1.8rem; }
@@ -130,6 +138,28 @@ body {
         background-color: #e29e06; }
       .game-page .card-container .game-card--D {
         background-color: #00910d; }
+
+.answering-page {
+  background-color: #23bff0; }
+  .answering-page .selected-card {
+    width: 46%;
+    margin: 0 auto;
+    margin-top: 1rem;
+    height: 18rem;
+    border: 3px solid #fff;
+    border-radius: 8px;
+    position: relative;
+    background-color: #f70320; }
+    .answering-page .selected-card img {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%); }
+  .answering-page h2 {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 500;
+    margin-top: 3rem; }
 
 .answer-page {
   padding-bottom: 1rem; }
