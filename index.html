@@ -68,16 +68,22 @@
       </div>
     </div>
 
-    <div class="page answering-page">
+    <div class="page selected-page">
       <h3 class="user">
         <span class="user__name"></span>
         <span class="user__id"></span>
       </h3>
-      <h2>你的選擇</h2>
+      <div class="game-page__info">
+        <span class="game-count">1 of 10</span>
+        <span class="game-score">0分</span>
+      </div>
+      <h2>已選擇</h2>
       <div class="selected-card">
-        <img src="assets/img/spades.png" alt="card">
+        <img alt="card" id="card-icon">
       </div>
       <h2>等候其他玩家答題...</h2>
+      <button id="correct-btn" style="position: fixed; bottom: 0; left: 0;">答對</button>
+      <button id="incorrect-btn" style="position: fixed; bottom: 0; right: 0;">答錯</button>
     </div>
 
     <div class="page answer-page answer-page--incorrect">
@@ -97,6 +103,7 @@
         <p>0分</p>
         <p>目前名次 399名</p>
       </div>
+      <button id="next-btn1" style="position: fixed; bottom: 0; right: 0;">下一題</button>
     </div>
 
     <div class="page answer-page answer-page--correct">
@@ -116,6 +123,7 @@
         <p>0分</p>
         <p>目前名次 399名</p>
       </div>
+      <button id="next-btn2" style="position: fixed; bottom: 0; right: 0;">下一題</button>
     </div>
 
     <div class="page result-page">

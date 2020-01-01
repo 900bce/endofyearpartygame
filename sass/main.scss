@@ -208,7 +208,7 @@ body {
   }
 }
 
-.answering-page {
+.selected-page {
   background-color: $color-blue-light;
 
   .selected-card {
@@ -226,8 +226,6 @@ body {
       left: 50%;
       transform: translate(-50%, -50%);
     }
-
-    background-color: rgb(247, 3, 32);
   }
 
   h2 {

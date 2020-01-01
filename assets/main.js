@@ -1,5 +1,26 @@
-const appInitial = () => {
-  const loginPage = document.querySelector('.login-page');
+const loginPage = document.querySelector('.login-page');
+const waitingPage = document.querySelector('.waiting-page');
+const questionPage = document.querySelector('.question-page');
+const answeringPage = document.querySelector('.game-page');
+const selectedPage = document.querySelector('.selected-page');
+const correctPage = document.querySelector('.answer-page--correct');
+const incorrectPage = document.querySelector('.answer-page--incorrect');
+
+const handlePage = (page) => {
+  const pages = document.querySelectorAll('.page');
+  pages.forEach(page => page.classList.remove('show-page'));
+  page.classList.add('show-page');
+}
+
+const setUserDisplayOnPages = () => {
+  const user = JSON.parse(localStorage.getItem('user'));
+  const userNameField = document.querySelectorAll('.user__name');
+  const userIdField = document.querySelectorAll('.user__id');
+  userNameField.forEach(elmt => elmt.textContent = user.name);
+  userIdField.forEach(elmt => elmt.textContent = user.id);
+}
+
+const login = () => {
   const userName = document.querySelector('#user-name-input');
   const userId = document.querySelector('#user-id-input');
   const loginButton = document.querySelector('#login-button');
@@ -12,57 +33,35 @@ const appInitial = () => {
     }
   }
 
-  const login = () => {
+  const loginEvent = () => {
     const user = {
       name: userName.value,
       id: userId.value
     }
     localStorage.setItem('user', JSON.stringify(user));
-    setUserDisplayOnPages(user.name, user.id);
-    loginPage.classList.remove('show-page');
+    setUserDisplayOnPages();
     waiting();
   }
 
-  loginPage.classList.add('show-page');
+  handlePage(loginPage);
   userName.addEventListener('input', inputEvent);
   userId.addEventListener('input', inputEvent);
-  loginButton.addEventListener('click', login);
-}
-
-const setUserDisplayOnPages = (name, id) => {
-  const userName = document.querySelectorAll('.user__name');
-  const userId = document.querySelectorAll('.user__id');
-  userName.forEach(elmt => elmt.textContent = name);
-  userId.forEach(elmt => elmt.textContent = id);
+  loginButton.addEventListener('click', loginEvent);
 }
 
 const waiting = () => {
-  const waitingPage = document.querySelector('.waiting-page');
   const userName = document.querySelector('.waiting-page__name');
-  waitingPage.classList.add('show-page');
-  userName.textContent = JSON.parse(localStorage.getItem('user')).name;
 
-  const nextStep = document.querySelector('#waiting-next-page');
-  nextStep.addEventListener('click', () => {
-    waitingPage.classList.remove('show-page');
-    question();
-  })
+  handlePage(waitingPage);
+  userName.textContent = JSON.parse(localStorage.getItem('user')).name;
 }
 
 const question = () => {
-  const questionPage = document.querySelector('.question-page');
-  questionPage.classList.add('show-page');
-
-  const nextStep = document.querySelector('#question-next-page');
-  nextStep.addEventListener('click', () => {
-    questionPage.classList.remove('show-page');
-    gameDisplay();
-  });
+  handlePage(questionPage);
 }
 
-const gameDisplay = () => {
-  const gamePage = document.querySelector('.game-page');
-  gamePage.classList.add('show-page');
+const answering = () => {
+  handlePage(answeringPage);
   game();
 }
 
@@ -70,10 +69,72 @@ const game = () => {
   const gameCard = document.querySelectorAll('.game-card');
   gameCard.forEach((card, index) => {
     card.addEventListener('click', () => {
-      console.log(index);
+      cardSelected(index);
     })
   })
 }
 
+const cardSelected = (cardIndex) => {
+  const cardColors = ['rgb(247, 3, 32)', 'rgb(0, 94, 215)', 'rgb(226, 158, 6)', 'rgb(0, 145, 13)'];
+  const cardIcons = ['spades', 'hearts', 'clubs', 'diamonds'];
+  const card = document.querySelector('.selected-card');
+  const cardIcon = document.querySelector('#card-icon');
 
-window.addEventListener('DOMContentLoaded', appInitial);
+  handlePage(selectedPage);
+  card.style.backgroundColor = cardColors[cardIndex];
+  cardIcon.setAttribute('src', `assets/img/${cardIcons[cardIndex]}.png`);
+  saveAnswer(2, cardIndex);
+}
+
+const saveAnswer = (count ,ans) => {
+  const user = JSON.parse(localStorage.getItem('user'));
+  let answers = new Object();
+  if (user.answers) {
+    answers = user.answers;
+  }
+  
+  let answer = '';
+  switch (ans) {
+    case 0:
+      answer = 'a';
+      break;
+    case 1:
+      answer = 'b';
+      break;
+    case 2:
+      answer = 'c';
+      break;
+    case 3:
+      answer = 'd';
+      break;
+  }
+  answers[count] = answer;
+  user.answers = answers;
+  localStorage.setItem('user', JSON.stringify(user));
+}
+
+const correctAns = () => {
+  handlePage(correctPage);
+}
+
+const incorrectAns = () => {
+  handlePage(incorrectPage);
+}
+
+const app = () => {
+  const user = localStorage.getItem('user');
+  if (!user) {
+    login();
+  } else {
+    login();
+  }
+
+  document.querySelector('#waiting-next-page').addEventListener('click', question);
+  document.querySelector('#question-next-page').addEventListener('click', answering);
+  document.querySelector('#correct-btn').addEventListener('click', correctAns);
+  document.querySelector('#incorrect-btn').addEventListener('click', incorrectAns);
+  document.querySelector('#next-btn1').addEventListener('click', question);
+  document.querySelector('#next-btn2').addEventListener('click', question);
+}
+
+window.addEventListener('DOMContentLoaded', app);
