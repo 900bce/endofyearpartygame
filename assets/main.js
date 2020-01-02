@@ -9,13 +9,12 @@ const resultPage = document.querySelector('.result-page');
 
 const socket = io('http://10.8.200.119:8787/');
 
-const getLocalStorage = (key) => {
+const getStorage = (key) => {
   return JSON.parse(localStorage.getItem(key));
 }
 
-const setLocalStorage = (key, value) => {
-  const originalData = getLocalStorage(key);
-  
+const setStorage = (key, value) => {
+  localStorage.setItem(key, JSON.stringify(value));
 }
 
 const handlePage = (page) => {
@@ -25,7 +24,7 @@ const handlePage = (page) => {
 }
 
 const setUserDisplayOnPages = () => {
-  const user = JSON.parse(localStorage.getItem('user'));
+  const user = getStorage('user');
   const userNameField = document.querySelectorAll('.user__name');
   const userIdField = document.querySelectorAll('.user__id');
   userNameField.forEach(elmt => elmt.textContent = user.name);
@@ -50,7 +49,7 @@ const register = () => {
       id: userId.value,
       name: userName.value
     }
-    localStorage.setItem('user', JSON.stringify(user));
+    setStorage('user', user);
     setUserDisplayOnPages();
     const socketJoin = socket.emit('client.joinGame', user);
     if (socketJoin.disconnected) {
@@ -75,7 +74,7 @@ const register = () => {
 const waitingForOtherUsers = () => {
   const userName = document.querySelector('.waiting-page__name');
   handlePage(waitingPage);
-  userName.textContent = JSON.parse(localStorage.getItem('user')).name;
+  userName.textContent = getStorage('user').name;
 }
 
 const question = () => {
@@ -85,77 +84,70 @@ const question = () => {
 const answering = (data) => {
   const { currentQuestNo, questionCount } = data;
   handlePage(answeringPage);
+  const startAnsweringTime = Date.now();
+  setStorage('startAnsweringTime', startAnsweringTime);
   showQuestionNumber(currentQuestNo, questionCount);
+  setStorage('questNo', currentQuestNo);
+  localStorage.removeItem('answer');
 }
 
-const answerSelected = (index) => {
-  let answer = '';
-  switch (ans) {
-    case 0:
-      answer = 'a';
-      break;
-    case 1:
-      answer = 'b';
-      break;
-    case 2:
-      answer = 'c';
-      break;
-    case 3:
-      answer = 'd';
-      break;
+const answerSelected = (ans) => {
+  if (!getStorage('answer')) {
+    const finishAnsweringTime = Date.now();
+    let answer = '';
+    switch (ans) {
+      case 0:
+        answer = 'a';
+        break;
+      case 1:
+        answer = 'b';
+        break;
+      case 2:
+        answer = 'c';
+        break;
+      case 3:
+        answer = 'd';
+        break;
+    }
+    const startAnsweringTime = getStorage('startAnsweringTime');
+    const speed = finishAnsweringTime - startAnsweringTime;
+    const submitData = {
+      questNo: getStorage('questNo'),
+      playerId: getStorage('user').id,
+      answer: answer,
+      speed: speed
+    }
+    setStorage('answer', answer);
+    /** Client 提交答案 */
+    socket.emit('client.submitAnswer', submitData);
+    setSelectedCardStyle(ans);
   }
 }
 
-const cardSelected = (cardIndex) => {
+const setSelectedCardStyle = (cardIndex) => {
   const cardColors = ['rgb(247, 3, 32)', 'rgb(0, 94, 215)', 'rgb(226, 158, 6)', 'rgb(0, 145, 13)'];
   const cardIcons = ['spades', 'hearts', 'clubs', 'diamonds'];
   const card = document.querySelector('.selected-card');
   const cardIcon = document.querySelector('#card-icon');
-
   card.style.backgroundColor = cardColors[cardIndex];
   cardIcon.setAttribute('src', `assets/img/${cardIcons[cardIndex]}.png`);
-  saveAnswer(5, cardIndex);
 }
 
-const saveAnswer = (count ,ans) => {
-  const user = JSON.parse(localStorage.getItem('user'));
-  let answers = new Object();
-  if (user.answers) {
-    answers = user.answers;
+const checkAnswer = (data) => {
+  const userId = getStorage('user').id;
+  const userData = data.players.find(player => player.id === userId);
+  console.log(data);
+  showScore(userData.score);
+  showRank(userData.rank);
+  if (data.currentQuestNo === data.questionCount) {
+    handlePage(resultPage);
+    return;
   }
-  
-  let answer = '';
-  switch (ans) {
-    case 0:
-      answer = 'a';
-      break;
-    case 1:
-      answer = 'b';
-      break;
-    case 2:
-      answer = 'c';
-      break;
-    case 3:
-      answer = 'd';
-      break;
+  if (data.answer === getStorage('answer')) {
+    handlePage(correctPage);
+  } else {
+    handlePage(incorrectPage);
   }
-  answers[count] = answer;
-  user.answers = answers;
-  localStorage.setItem('user', JSON.stringify(user));
-  /** Client 提交答案 */
-  socket.emit('client.submitAnswer', user);
-}
-
-const correctAns = () => {
-  handlePage(correctPage);
-}
-
-const incorrectAns = () => {
-  handlePage(incorrectPage);
-}
-
-const final = () => {
-  handlePage(resultPage);
 }
 
 const showQuestionNumber =(current, all) => {
@@ -176,11 +168,14 @@ const showRank = (rank) => {
 }
 
 const app = () => {
-  const user = JSON.parse(localStorage.getItem('user'));
+  const user = getStorage('user');
+
   if (!user) {
     register();
   } else {
+    /** Client 建立連線 */
     socket.emit('client.connection', user.id);
+    setUserDisplayOnPages();
   }
 
   /** Client 加入遊戲失敗 */
@@ -195,23 +190,14 @@ const app = () => {
   socket.on('client.showQuizOptions', data => {
     answering(data);
   });
+  /** Client 提交答案失敗 */
+  socket.on('client.submitAnswerFail', () => {
+    alert('提交答案失敗');
+  })
   /** Client 提交答案後，進入答案等待頁 */
   socket.on('client.waitForQuizAnswer', () => handlePage(selectedPage));
   /** 顯示 Client 的答題結果 */
-  socket.on('client.showQuizAnswer', result => {
-    if (result === 'correct') {
-      correctAns();
-    } else {
-      incorrectAns();
-    }
-  });
-
-  // document.querySelector('#waiting-next-page').addEventListener('click', question);
-  // document.querySelector('#question-next-page').addEventListener('click', answering);
-  // document.querySelector('#correct-btn').addEventListener('click', correctAns);
-  // document.querySelector('#incorrect-btn').addEventListener('click', incorrectAns);
-  // document.querySelector('#next-btn1').addEventListener('click', question);
-  // document.querySelector('#next-btn2').addEventListener('click', question);
+  socket.on('client.showQuizAnswer', recievedData => checkAnswer(recievedData));
 }
 
 window.addEventListener('DOMContentLoaded', app);
