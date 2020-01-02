@@ -16,18 +16,18 @@ body {
 .show-page {
   display: block; }
 
-.login-page {
+.register-page {
   background-color: #23bff0;
   background-image: url("./img/mobileWebBackground01.png");
   background-size: cover;
   background-position: top;
   padding: 1rem 0;
   text-align: center; }
-  .login-page__title-img {
+  .register-page__title-img {
     width: 90%;
     height: auto;
     margin-bottom: 3.75rem; }
-  .login-page .login-input input {
+  .register-page .register-input input {
     width: 90%;
     padding: 1rem;
     margin-bottom: 2rem;
@@ -35,15 +35,15 @@ body {
     font-weight: 800;
     border-radius: .75rem;
     color: #1686a9; }
-    .login-page .login-input input:focus {
+    .register-page .register-input input:focus {
       outline: none; }
-  .login-page .login-bottom {
+  .register-page .register-bottom {
     margin: 1rem 0 1.5rem 0; }
-    .login-page .login-bottom__notice {
+    .register-page .register-bottom__notice {
       font-size: 1.5rem;
       margin: 5px;
       text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5); }
-    .login-page .login-bottom__btn {
+    .register-page .register-bottom__btn {
       width: 90%;
       height: 4.375rem;
       background-color: #fff;
@@ -52,10 +52,42 @@ body {
       background-size: cover;
       border: none;
       border-radius: 18px;
-      box-shadow: 3px 3px 1px rgba(0, 0, 0, 0.5); }
-      .login-page .login-bottom__btn:disabled {
+      box-shadow: 3px 3px 1px rgba(0, 0, 0, 0.5);
+      position: relative; }
+      .register-page .register-bottom__btn:disabled {
         box-shadow: none;
         background-image: url("./img/mobileWebGoBtnDisable.png"); }
+  .register-page .hollow-dots-spinner {
+    display: none;
+    position: absolute;
+    left: 50%;
+    right: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+    height: 1rem;
+    width: calc(2rem * 3); }
+  .register-page .hollow-dots-spinner .dot {
+    width: 1rem;
+    height: 1rem;
+    margin: 0 calc(1rem / 2);
+    border: calc(1rem / 5) solid #23bff0;
+    border-radius: 50%;
+    float: left;
+    transform: scale(0);
+    animation: hollow-dots-spinner-animation 1000ms ease infinite 0ms; }
+  .register-page .hollow-dots-spinner .dot:nth-child(1) {
+    animation-delay: calc(300ms * 1); }
+  .register-page .hollow-dots-spinner .dot:nth-child(2) {
+    animation-delay: calc(300ms * 2); }
+  .register-page .hollow-dots-spinner .dot:nth-child(3) {
+    animation-delay: calc(300ms * 3); }
+
+@keyframes hollow-dots-spinner-animation {
+  50% {
+    transform: scale(1);
+    opacity: 1; }
+  100% {
+    opacity: 0; } }
 
 .waiting-page {
   background-color: #23bff0;

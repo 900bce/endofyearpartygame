@@ -6,19 +6,28 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     <link rel="stylesheet" href="./assets/style.css" />
     <link href="https://fonts.googleapis.com/css?family=Noto+Sans+TC:400,500,700&display=swap&subset=chinese-traditional" rel="stylesheet">
+    <script src="http://10.8.200.119:8787/socket.io/socket.io.js"></script>
     <title>精誠智慧王</title>
   </head>
 
   <body>
-    <div class="page login-page">
-      <img src="./assets/img/mobileWebGameTitle.png" class="login-page__title-img" alt="精誠智慧王">
-      <div class="login-input">
+    <div class="page register-page">
+      <img src="./assets/img/mobileWebGameTitle.png" class="register-page__title-img" alt="精誠智慧王">
+      <div class="register-input">
         <input type="text" placeholder="請輸入真實姓名" id="user-name-input">
         <input type="text" placeholder="請輸入員工編號" id="user-id-input">
       </div>
-      <div class="login-bottom">
-        <p class="login-bottom__notice">使用假姓名將喪失比賽資格!!</p>
-        <button class="login-bottom__btn" id="login-button" disabled>&nbsp;</button>
+      <div class="register-bottom">
+        <p class="register-bottom__notice">使用假姓名將喪失比賽資格!!</p>
+        <button class="register-bottom__btn" id="register-button" disabled>
+          &nbsp;
+          <div class="hollow-dots-spinner"
+            :style="spinnerStyle">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+          </div>
+        </button>
       </div>
     </div>
 
@@ -49,20 +58,20 @@
         <span class="user__id"></span>
       </h3>
       <div class="game-page__info">
-        <span class="game-count">1 of 10</span>
-        <span class="game-score">0分</span>
+        <span class="game-count"><span class="currentQuestNo"></span> of <span class="question-count"></span></span>
+        <span class="game-score"><span class="score">0</span>分</span>
       </div>
       <div class="card-container">
-        <div class="game-card game-card--A">
+        <div class="game-card game-card--A" onclick="answerSelected(0)">
           <img src="./assets/img/spades.png" alt="spades">
         </div>
-        <div class="game-card game-card--B">
+        <div class="game-card game-card--B" onclick="answerSelected(1)">
           <img src="./assets/img/hearts.png" alt="hearts">
         </div>
-        <div class="game-card game-card--C">
+        <div class="game-card game-card--C" onclick="answerSelected(2)">
           <img src="./assets/img/clubs.png" alt="clubs">
         </div>
-        <div class="game-card game-card--D">
+        <div class="game-card game-card--D" onclick="answerSelected(3)">
           <img src="./assets/img/diamonds.png" alt="diamonds">
         </div>
       </div>
@@ -74,8 +83,8 @@
         <span class="user__id"></span>
       </h3>
       <div class="game-page__info">
-        <span class="game-count">1 of 10</span>
-        <span class="game-score">0分</span>
+        <span class="game-count"><span class="currentQuestNo"></span> of <span class="question-count"></span></span>
+        <span class="game-score"><span class="score">0</span>分</span>
       </div>
       <h2>已選擇</h2>
       <div class="selected-card">
@@ -100,8 +109,8 @@
       </div>
 
       <div class="answer-page__score-box answer-page__score-box--incorrect">
-        <p>0分</p>
-        <p>目前名次 399名</p>
+        <p><span class="score">0</span>分</p>
+        <p>目前名次 <span class="rank"></span>名</p>
       </div>
       <button id="next-btn1" style="position: fixed; bottom: 0; right: 0;">下一題</button>
     </div>
@@ -120,8 +129,8 @@
       </div>
       
       <div class="answer-page__score-box answer-page__score-box--correct">
-        <p>0分</p>
-        <p>目前名次 399名</p>
+        <p><span class="score">0</span>分</p>
+        <p>目前名次 <span class="rank"></span>名</p>
       </div>
       <button id="next-btn2" style="position: fixed; bottom: 0; right: 0;">下一題</button>
     </div>
@@ -134,8 +143,8 @@
       <div class="result-page__content">
         <img src="./assets/img/mobileTxtFinalScore.png" alt="final score" class="text-img">
         <img src="./assets/img/mobielIconLike.png" alt="like icon">
-        <p class="final-score">9999分</p>
-        <p class="final-ranking">目前名次 1名</p>
+        <p class="final-score"><span class="score">0</span>分</p>
+        <p class="final-ranking">目前名次 <span class="rank"></span>名</p>
       </div>
     </div>
 
