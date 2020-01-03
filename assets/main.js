@@ -9,6 +9,8 @@ const resultPage = document.querySelector('.result-page');
 
 const socket = io('http://10.8.200.119:8787/');
 
+let allowAnswer = false;
+
 const getStorage = (key) => {
   return localStorage.getItem(key);
 }
@@ -58,21 +60,26 @@ const setSelectedCardStyle = (cardIndex) => {
 }
 
 const answerSelected = (ans) => {
+
+  if (!allowAnswer) {
+    return;
+  }
+
   if (!getStorage('answer')) {
     const finishAnsweringTime = Date.now();
     let answer = '';
     switch (ans) {
       case 0:
-        answer = 'a';
+        answer = 'A';
         break;
       case 1:
-        answer = 'b';
+        answer = 'B';
         break;
       case 2:
-        answer = 'c';
+        answer = 'C';
         break;
       case 3:
-        answer = 'd';
+        answer = 'D';
         break;
     }
     const startAnsweringTime = getStorage('startAnsweringTime');
@@ -113,6 +120,9 @@ const showQuizOptions = (data) => {
   if (!getStorage('user')) {
     return;
   }
+
+  allowAnswer = true;
+
   const { currentQuestNo, questionCount } = data;
   handlePage(answeringPage);
   const startAnsweringTime = Date.now();
@@ -145,23 +155,24 @@ const waitForQuizAnswer = () => {
   handlePage(selectedPage)
 }
 
-const register = () => {
-  const userName = document.querySelector('#user-name-input');
-  const userId = document.querySelector('#user-id-input');
+const initialRegisterPage = () => {
+  const userNameInputField = document.querySelector('#user-name-input');
+  const userIdInputField = document.querySelector('#user-id-input');
   const registerButton = document.querySelector('#register-button');
+  const waitingConnectionMessage = document.querySelector('#waiting-connection-message');
 
   const inputEvent = () => {
-    if (userName.value !== '' && userId.value !== '') {
-      registerButton.disabled = false;
-    } else {
-      registerButton.disabled = true;
-    }
+    registerButton.disabled = userNameInputField.value === '' || userIdInputField.value === '';
   }
 
   const registerEvent = () => {
+    if (!Boolean(getStorage('allowJoinGame'))) {
+      return;
+    }
+
     const user = {
-      id: userId.value,
-      name: userName.value
+      id: userIdInputField.value,
+      name: userNameInputField.value
     };
     setStorage('user', JSON.stringify(user));
     setUserDisplayOnPages();
@@ -177,24 +188,27 @@ const register = () => {
   handlePage(registerPage);
   /** 等待遊戲允許加入 */
   socket.on('client.waitForAllowJoinGame', () => {
-    userName.disabled = false;
-    userId.disabled = false;
+    waitingConnectionMessage.style.display = 'none';
+    userNameInputField.disabled = false;
+    userIdInputField.disabled = false;
   });
-  userName.addEventListener('input', inputEvent);
-  userId.addEventListener('input', inputEvent);
+  userNameInputField.addEventListener('input', inputEvent);
+  userIdInputField.addEventListener('input', inputEvent);
   registerButton.addEventListener('click', registerEvent);
 }
 
 const app = () => {
   const user = JSON.parse(getStorage('user'));
+  socket.emit('client.connection', user && user.id || '');
+  initialRegisterPage();
 
-  if (!user) {
-    register();
-  } else {
-    /** Client 建立連線 */
-    socket.emit('client.connection', user.id);
-    setUserDisplayOnPages();
-  }
+  socket.on('client.connection', allowJoinGame => {
+    const userNameInputField = document.querySelector('#user-name-input');
+    const userIdInputField = document.querySelector('#user-id-input');
+    userNameInputField.disabled = !allowJoinGame;
+    userIdInputField.disabled = !allowJoinGame;
+    setStorage('allowJoinGame', allowJoinGame);
+  });
 
   /** Client 加入遊戲失敗 */
   socket.on('client.joinGameFail', () => alert('加入失敗'));
@@ -210,6 +224,15 @@ const app = () => {
   socket.on('client.waitForQuizAnswer', waitForQuizAnswer);
   /** 顯示 Client 的答題結果 */
   socket.on('client.showQuizAnswer', recievedData => showQuizAnswer(recievedData));
+
+  socket.on('client.destroy', () => {
+    localStorage.clear();
+    location.reload();
+  });
+
+  socket.on('disconnect', () => {
+    location.reload();
+  });
 }
 
 window.addEventListener('DOMContentLoaded', app);
