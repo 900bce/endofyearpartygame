@@ -23,12 +23,104 @@ const handlePage = (page) => {
   page.classList.add('show-page');
 }
 
+const showScore = (score) => {
+  const scoreField = document.querySelectorAll('.score');
+  scoreField.forEach(field => field.textContent = score);
+}
+
+const showRank = (rank) => {
+  const rankField = document.querySelectorAll('.rank');
+  rankField.forEach(field => field.textContent = rank);
+}
+
 const setUserDisplayOnPages = () => {
   const user = getStorage('user');
   const userNameField = document.querySelectorAll('.user__name');
   const userIdField = document.querySelectorAll('.user__id');
   userNameField.forEach(elmt => elmt.textContent = user.name);
   userIdField.forEach(elmt => elmt.textContent = user.id);
+}
+
+const showQuestionNumber = (current, all) => {
+  const questionNo = document.querySelectorAll('.currentQuestNo');
+  const questionAll = document.querySelectorAll('.question-count');
+  questionNo.forEach(item => item.textContent = current);
+  questionAll.forEach(item => item.textContent = all);
+}
+
+const setSelectedCardStyle = (cardIndex) => {
+  const cardColors = ['rgb(247, 3, 32)', 'rgb(0, 94, 215)', 'rgb(226, 158, 6)', 'rgb(0, 145, 13)'];
+  const cardIcons = ['spades', 'hearts', 'clubs', 'diamonds'];
+  const card = document.querySelector('.selected-card');
+  const cardIcon = document.querySelector('#card-icon');
+  card.style.backgroundColor = cardColors[cardIndex];
+  cardIcon.setAttribute('src', `assets/img/${cardIcons[cardIndex]}.png`);
+}
+
+const answerSelected = (ans) => {
+  if (!getStorage('answer')) {
+    const finishAnsweringTime = Date.now();
+    let answer = '';
+    switch (ans) {
+      case 0:
+        answer = 'a';
+        break;
+      case 1:
+        answer = 'b';
+        break;
+      case 2:
+        answer = 'c';
+        break;
+      case 3:
+        answer = 'd';
+        break;
+    }
+    const startAnsweringTime = getStorage('startAnsweringTime');
+    const speed = finishAnsweringTime - startAnsweringTime;
+    const submitData = {
+      questNo: getStorage('questNo'),
+      playerId: getStorage('user').id,
+      answer: answer,
+      speed: speed
+    }
+    setStorage('answer', answer);
+    /** Client 提交答案 */
+    socket.emit('client.submitAnswer', submitData);
+    setSelectedCardStyle(ans);
+  }
+}
+
+const checkAnswer = (data) => {
+  const userId = getStorage('user').id;
+  const userData = data.players.find(player => player.id === userId);
+  console.log(data);
+  showScore(userData.score);
+  showRank(userData.rank);
+  if (data.currentQuestNo === data.questionCount) {
+    handlePage(resultPage);
+    return;
+  }
+  if (data.answer === getStorage('answer')) {
+    handlePage(correctPage);
+  } else {
+    handlePage(incorrectPage);
+  }
+}
+
+const answering = (data) => {
+  const { currentQuestNo, questionCount } = data;
+  handlePage(answeringPage);
+  const startAnsweringTime = Date.now();
+  setStorage('startAnsweringTime', startAnsweringTime);
+  showQuestionNumber(currentQuestNo, questionCount);
+  setStorage('questNo', currentQuestNo);
+  localStorage.removeItem('answer');
+}
+
+const waitingForOtherUsers = () => {
+  const userName = document.querySelector('.waiting-page__name');
+  handlePage(waitingPage);
+  userName.textContent = getStorage('user').name;
 }
 
 const register = () => {
@@ -71,102 +163,6 @@ const register = () => {
   registerButton.addEventListener('click', registerEvent);
 }
 
-const waitingForOtherUsers = () => {
-  const userName = document.querySelector('.waiting-page__name');
-  handlePage(waitingPage);
-  userName.textContent = getStorage('user').name;
-}
-
-const question = () => {
-  handlePage(questionPage);
-}
-
-const answering = (data) => {
-  const { currentQuestNo, questionCount } = data;
-  handlePage(answeringPage);
-  const startAnsweringTime = Date.now();
-  setStorage('startAnsweringTime', startAnsweringTime);
-  showQuestionNumber(currentQuestNo, questionCount);
-  setStorage('questNo', currentQuestNo);
-  localStorage.removeItem('answer');
-}
-
-const answerSelected = (ans) => {
-  if (!getStorage('answer')) {
-    const finishAnsweringTime = Date.now();
-    let answer = '';
-    switch (ans) {
-      case 0:
-        answer = 'a';
-        break;
-      case 1:
-        answer = 'b';
-        break;
-      case 2:
-        answer = 'c';
-        break;
-      case 3:
-        answer = 'd';
-        break;
-    }
-    const startAnsweringTime = getStorage('startAnsweringTime');
-    const speed = finishAnsweringTime - startAnsweringTime;
-    const submitData = {
-      questNo: getStorage('questNo'),
-      playerId: getStorage('user').id,
-      answer: answer,
-      speed: speed
-    }
-    setStorage('answer', answer);
-    /** Client 提交答案 */
-    socket.emit('client.submitAnswer', submitData);
-    setSelectedCardStyle(ans);
-  }
-}
-
-const setSelectedCardStyle = (cardIndex) => {
-  const cardColors = ['rgb(247, 3, 32)', 'rgb(0, 94, 215)', 'rgb(226, 158, 6)', 'rgb(0, 145, 13)'];
-  const cardIcons = ['spades', 'hearts', 'clubs', 'diamonds'];
-  const card = document.querySelector('.selected-card');
-  const cardIcon = document.querySelector('#card-icon');
-  card.style.backgroundColor = cardColors[cardIndex];
-  cardIcon.setAttribute('src', `assets/img/${cardIcons[cardIndex]}.png`);
-}
-
-const checkAnswer = (data) => {
-  const userId = getStorage('user').id;
-  const userData = data.players.find(player => player.id === userId);
-  console.log(data);
-  showScore(userData.score);
-  showRank(userData.rank);
-  if (data.currentQuestNo === data.questionCount) {
-    handlePage(resultPage);
-    return;
-  }
-  if (data.answer === getStorage('answer')) {
-    handlePage(correctPage);
-  } else {
-    handlePage(incorrectPage);
-  }
-}
-
-const showQuestionNumber =(current, all) => {
-  const questionNo = document.querySelectorAll('.currentQuestNo');
-  const questionAll = document.querySelectorAll('.question-count');
-  questionNo.forEach(item => item.textContent = current);
-  questionAll.forEach(item => item.textContent = all);
-}
-
-const showScore = (score) => {
-  const scoreField = document.querySelectorAll('.score');
-  scoreField.forEach(field => field.textContent = score);
-}
-
-const showRank = (rank) => {
-  const rankField = document.querySelectorAll('.rank');
-  rankField.forEach(field => field.textContent = rank);
-}
-
 const app = () => {
   const user = getStorage('user');
 
@@ -185,7 +181,7 @@ const app = () => {
   /** Client 加入遊戲後，等待遊戲開始 */
   socket.on('client.waitForGameToStart', waitingForOtherUsers);
   /** 遊戲開始後，等待題目顯示 */
-  socket.on('client.waitForQuizToShow', question);
+  socket.on('client.waitForQuizToShow', () => handlePage(questionPage));
   /** 題目顯示後，Client 進入作答介面 */
   socket.on('client.showQuizOptions', data => {
     answering(data);
