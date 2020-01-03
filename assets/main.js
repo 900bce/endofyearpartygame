@@ -60,41 +60,38 @@ const setSelectedCardStyle = (cardIndex) => {
 }
 
 const answerSelected = (ans) => {
-
-  if (!allowAnswer) {
+  if (!allowAnswer || getStorage('answer')) {
     return;
   }
 
-  if (!getStorage('answer')) {
-    const finishAnsweringTime = Date.now();
-    let answer = '';
-    switch (ans) {
-      case 0:
-        answer = 'A';
-        break;
-      case 1:
-        answer = 'B';
-        break;
-      case 2:
-        answer = 'C';
-        break;
-      case 3:
-        answer = 'D';
-        break;
-    }
-    const startAnsweringTime = getStorage('startAnsweringTime');
-    const speed = finishAnsweringTime - startAnsweringTime;
-    const submitData = {
-      questNo: getStorage('questNo'),
-      playerId: JSON.parse(getStorage('user')).id,
-      answer: answer,
-      speed: speed
-    }
-    setStorage('answer', answer);
-    /** Client 提交答案 */
-    socket.emit('client.submitAnswer', submitData);
-    setSelectedCardStyle(ans);
+  const finishAnsweringTime = Date.now();
+  let answer = '';
+  switch (ans) {
+    case 0:
+      answer = 'A';
+      break;
+    case 1:
+      answer = 'B';
+      break;
+    case 2:
+      answer = 'C';
+      break;
+    case 3:
+      answer = 'D';
+      break;
   }
+  const startAnsweringTime = getStorage('startAnsweringTime');
+  const speed = finishAnsweringTime - startAnsweringTime;
+  const submitData = {
+    questNo: getStorage('questNo'),
+    playerId: JSON.parse(getStorage('user')).id,
+    answer: answer,
+    speed: speed
+  }
+  setStorage('answer', answer);
+  /** Client 提交答案 */
+  socket.emit('client.submitAnswer', submitData);
+  setSelectedCardStyle(ans);
 }
 
 const showQuizAnswer = (data) => {
