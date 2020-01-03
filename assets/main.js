@@ -10,11 +10,11 @@ const resultPage = document.querySelector('.result-page');
 const socket = io('http://10.8.200.119:8787/');
 
 const getStorage = (key) => {
-  return JSON.parse(localStorage.getItem(key));
+  return localStorage.getItem(key);
 }
 
 const setStorage = (key, value) => {
-  localStorage.setItem(key, JSON.stringify(value));
+  localStorage.setItem(key, value);
 }
 
 const handlePage = (page) => {
@@ -34,7 +34,7 @@ const showRank = (rank) => {
 }
 
 const setUserDisplayOnPages = () => {
-  const user = getStorage('user');
+  const user = JSON.parse(getStorage('user'));
   const userNameField = document.querySelectorAll('.user__name');
   const userIdField = document.querySelectorAll('.user__id');
   userNameField.forEach(elmt => elmt.textContent = user.name);
@@ -79,7 +79,7 @@ const answerSelected = (ans) => {
     const speed = finishAnsweringTime - startAnsweringTime;
     const submitData = {
       questNo: getStorage('questNo'),
-      playerId: getStorage('user').id,
+      playerId: JSON.parse(getStorage('user')).id,
       answer: answer,
       speed: speed
     }
@@ -91,7 +91,7 @@ const answerSelected = (ans) => {
 }
 
 const checkAnswer = (data) => {
-  const userId = getStorage('user').id;
+  const userId = JSON.parse(getStorage('user')).id;
   const userData = data.players.find(player => player.id === userId);
   console.log(data);
   showScore(userData.score);
@@ -120,7 +120,7 @@ const answering = (data) => {
 const waitingForOtherUsers = () => {
   const userName = document.querySelector('.waiting-page__name');
   handlePage(waitingPage);
-  userName.textContent = getStorage('user').name;
+  userName.textContent = JSON.parse(getStorage('user')).name;
 }
 
 const register = () => {
@@ -140,8 +140,8 @@ const register = () => {
     const user = {
       id: userId.value,
       name: userName.value
-    }
-    setStorage('user', user);
+    };
+    setStorage('user', JSON.stringify(user));
     setUserDisplayOnPages();
     const socketJoin = socket.emit('client.joinGame', user);
     if (socketJoin.disconnected) {
@@ -157,14 +157,14 @@ const register = () => {
   socket.on('client.waitForAllowJoinGame', () => {
     userName.disabled = false;
     userId.disabled = false;
-  })
+  });
   userName.addEventListener('input', inputEvent);
   userId.addEventListener('input', inputEvent);
   registerButton.addEventListener('click', registerEvent);
 }
 
 const app = () => {
-  const user = getStorage('user');
+  const user = JSON.parse(getStorage('user'));
 
   if (!user) {
     register();
@@ -175,21 +175,15 @@ const app = () => {
   }
 
   /** Client 加入遊戲失敗 */
-  socket.on('client.joinGameFail', () => {
-    alert('加入失敗');
-  })
+  socket.on('client.joinGameFail', () => alert('加入失敗'));
   /** Client 加入遊戲後，等待遊戲開始 */
   socket.on('client.waitForGameToStart', waitingForOtherUsers);
   /** 遊戲開始後，等待題目顯示 */
   socket.on('client.waitForQuizToShow', () => handlePage(questionPage));
   /** 題目顯示後，Client 進入作答介面 */
-  socket.on('client.showQuizOptions', data => {
-    answering(data);
-  });
+  socket.on('client.showQuizOptions', data => answering(data));
   /** Client 提交答案失敗 */
-  socket.on('client.submitAnswerFail', () => {
-    alert('提交答案失敗');
-  })
+  socket.on('client.submitAnswerFail', () => alert('提交答案失敗'));
   /** Client 提交答案後，進入答案等待頁 */
   socket.on('client.waitForQuizAnswer', () => handlePage(selectedPage));
   /** 顯示 Client 的答題結果 */
