@@ -41,6 +41,14 @@ body {
     margin-bottom: 3.75rem;
   }
 
+  #waiting-connection-message {
+    margin-top: 3rem;
+  }
+
+  .register-form {
+    display: none;
+  }
+
   .register-input {
     input {
       width: 90%;

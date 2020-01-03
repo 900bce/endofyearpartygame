@@ -159,6 +159,7 @@ const initialRegisterPage = () => {
   const userNameInputField = document.querySelector('#user-name-input');
   const userIdInputField = document.querySelector('#user-id-input');
   const registerButton = document.querySelector('#register-button');
+  const registerForm = document.querySelector('.register-form');
   const waitingConnectionMessage = document.querySelector('#waiting-connection-message');
 
   const inputEvent = () => {
@@ -189,6 +190,7 @@ const initialRegisterPage = () => {
   /** 等待遊戲允許加入 */
   socket.on('client.waitForAllowJoinGame', () => {
     waitingConnectionMessage.style.display = 'none';
+    registerForm.style.display = 'block';
     userNameInputField.disabled = false;
     userIdInputField.disabled = false;
   });
