@@ -127,6 +127,7 @@ const showQuizOptions = (data) => {
   storage.set('startAnsweringTime', startAnsweringTime);
   showQuestionNumber(currentQuestNo, questionCount);
   storage.set('questNo', currentQuestNo);
+  storage.set('totalQuestNum', questionCount);
   localStorage.removeItem('currentAnswer');
 }
 
