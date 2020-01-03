@@ -11,12 +11,13 @@ const socket = io('http://10.8.200.119:8787/');
 
 let allowAnswer = false;
 
-const getStorage = (key) => {
-  return localStorage.getItem(key);
-}
-
-const setStorage = (key, value) => {
-  localStorage.setItem(key, value);
+const storage = {
+  get: key => {
+    return localStorage.getItem(key);
+  },
+  set: (key, value) => {
+    localStorage.setItem(key, value);
+  }
 }
 
 const handlePage = (page) => {
@@ -36,7 +37,7 @@ const showRank = (rank) => {
 }
 
 const setUserDisplayOnPages = () => {
-  const user = JSON.parse(getStorage('user'));
+  const user = JSON.parse(storage.get('user'));
   const userNameField = document.querySelectorAll('.user__name');
   const userIdField = document.querySelectorAll('.user__id');
   userNameField.forEach(elmt => elmt.textContent = user.name);
@@ -60,7 +61,7 @@ const setSelectedCardStyle = (cardIndex) => {
 }
 
 const answerSelected = (ans) => {
-  if (!allowAnswer || getStorage('answer')) {
+  if (!allowAnswer || storage.get('currentAnswer')) {
     return;
   }
 
@@ -80,25 +81,25 @@ const answerSelected = (ans) => {
       answer = 'D';
       break;
   }
-  const startAnsweringTime = getStorage('startAnsweringTime');
+  const startAnsweringTime = storage.get('startAnsweringTime');
   const speed = finishAnsweringTime - startAnsweringTime;
   const submitData = {
-    questNo: getStorage('questNo'),
-    playerId: JSON.parse(getStorage('user')).id,
+    questNo: storage.get('questNo'),
+    playerId: JSON.parse(storage.get('user')).id,
     answer: answer,
     speed: speed
   }
-  setStorage('answer', answer);
+  storage.set('currentAnswer', answer);
   /** Client 提交答案 */
   socket.emit('client.submitAnswer', submitData);
   setSelectedCardStyle(ans);
 }
 
 const showQuizAnswer = (data) => {
-  if (!getStorage('user')) {
+  if (!storage.get('user')) {
     return;
   }
-  const userId = JSON.parse(getStorage('user')).id;
+  const userId = JSON.parse(storage.get('user')).id;
   const userData = data.players.find(player => player.id === userId);
   showScore(userData.score);
   showRank(userData.rank);
@@ -106,7 +107,7 @@ const showQuizAnswer = (data) => {
     handlePage(resultPage);
     return;
   }
-  if (data.answer === getStorage('answer')) {
+  if (data.answer === storage.get('currentAnswer')) {
     handlePage(correctPage);
   } else {
     handlePage(incorrectPage);
@@ -114,7 +115,7 @@ const showQuizAnswer = (data) => {
 }
 
 const showQuizOptions = (data) => {
-  if (!getStorage('user')) {
+  if (!storage.get('user')) {
     return;
   }
 
@@ -123,30 +124,30 @@ const showQuizOptions = (data) => {
   const { currentQuestNo, questionCount } = data;
   handlePage(answeringPage);
   const startAnsweringTime = Date.now();
-  setStorage('startAnsweringTime', startAnsweringTime);
+  storage.set('startAnsweringTime', startAnsweringTime);
   showQuestionNumber(currentQuestNo, questionCount);
-  setStorage('questNo', currentQuestNo);
-  localStorage.removeItem('answer');
+  storage.set('questNo', currentQuestNo);
+  localStorage.removeItem('currentAnswer');
 }
 
 const waitingForOtherUsers = () => {
-  if (!getStorage('user')) {
+  if (!storage.get('user')) {
     return;
   }
   const userName = document.querySelector('.waiting-page__name');
   handlePage(waitingPage);
-  userName.textContent = JSON.parse(getStorage('user')).name;
+  userName.textContent = JSON.parse(storage.get('user')).name;
 }
 
 const waitForQuizToShow = () => {
-  if (!getStorage('user')) {
+  if (!storage.get('user')) {
     return;
   }
   handlePage(questionPage);
 }
 
 const waitForQuizAnswer = () => {
-  if (!getStorage('user')) {
+  if (!storage.get('user')) {
     return;
   }
   handlePage(selectedPage)
@@ -164,7 +165,7 @@ const initialRegisterPage = () => {
   }
 
   const registerEvent = () => {
-    if (!Boolean(getStorage('allowJoinGame'))) {
+    if (!Boolean(storage.get('allowJoinGame'))) {
       return;
     }
 
@@ -172,7 +173,7 @@ const initialRegisterPage = () => {
       id: userIdInputField.value,
       name: userNameInputField.value
     };
-    setStorage('user', JSON.stringify(user));
+    storage.set('user', JSON.stringify(user));
     setUserDisplayOnPages();
     const socketJoin = socket.emit('client.joinGame', user);
     if (socketJoin.disconnected) {
@@ -197,7 +198,7 @@ const initialRegisterPage = () => {
 }
 
 const app = () => {
-  const user = JSON.parse(getStorage('user'));
+  const user = JSON.parse(storage.get('user'));
   socket.emit('client.connection', user && user.id || '');
   initialRegisterPage();
 
@@ -206,7 +207,7 @@ const app = () => {
     const userIdInputField = document.querySelector('#user-id-input');
     userNameInputField.disabled = !allowJoinGame;
     userIdInputField.disabled = !allowJoinGame;
-    setStorage('allowJoinGame', allowJoinGame);
+    storage.set('allowJoinGame', allowJoinGame);
   });
 
   /** Client 加入遊戲失敗 */
