@@ -90,10 +90,12 @@ const answerSelected = (ans) => {
   }
 }
 
-const checkAnswer = (data) => {
+const showQuizAnswer = (data) => {
+  if (!getStorage('user')) {
+    return;
+  }
   const userId = JSON.parse(getStorage('user')).id;
   const userData = data.players.find(player => player.id === userId);
-  console.log(data);
   showScore(userData.score);
   showRank(userData.rank);
   if (data.currentQuestNo === data.questionCount) {
@@ -107,7 +109,10 @@ const checkAnswer = (data) => {
   }
 }
 
-const answering = (data) => {
+const showQuizOptions = (data) => {
+  if (!getStorage('user')) {
+    return;
+  }
   const { currentQuestNo, questionCount } = data;
   handlePage(answeringPage);
   const startAnsweringTime = Date.now();
@@ -118,9 +123,26 @@ const answering = (data) => {
 }
 
 const waitingForOtherUsers = () => {
+  if (!getStorage('user')) {
+    return;
+  }
   const userName = document.querySelector('.waiting-page__name');
   handlePage(waitingPage);
   userName.textContent = JSON.parse(getStorage('user')).name;
+}
+
+const waitForQuizToShow = () => {
+  if (!getStorage('user')) {
+    return;
+  }
+  handlePage(questionPage);
+}
+
+const waitForQuizAnswer = () => {
+  if (!getStorage('user')) {
+    return;
+  }
+  handlePage(selectedPage)
 }
 
 const register = () => {
@@ -179,15 +201,15 @@ const app = () => {
   /** Client 加入遊戲後，等待遊戲開始 */
   socket.on('client.waitForGameToStart', waitingForOtherUsers);
   /** 遊戲開始後，等待題目顯示 */
-  socket.on('client.waitForQuizToShow', () => handlePage(questionPage));
+  socket.on('client.waitForQuizToShow', waitForQuizToShow);
   /** 題目顯示後，Client 進入作答介面 */
-  socket.on('client.showQuizOptions', data => answering(data));
+  socket.on('client.showQuizOptions', data => showQuizOptions(data));
   /** Client 提交答案失敗 */
   socket.on('client.submitAnswerFail', () => alert('提交答案失敗'));
   /** Client 提交答案後，進入答案等待頁 */
-  socket.on('client.waitForQuizAnswer', () => handlePage(selectedPage));
+  socket.on('client.waitForQuizAnswer', waitForQuizAnswer);
   /** 顯示 Client 的答題結果 */
-  socket.on('client.showQuizAnswer', recievedData => checkAnswer(recievedData));
+  socket.on('client.showQuizAnswer', recievedData => showQuizAnswer(recievedData));
 }
 
 window.addEventListener('DOMContentLoaded', app);
