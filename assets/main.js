@@ -7,7 +7,7 @@ const correctPage = document.querySelector('.answer-page--correct');
 const incorrectPage = document.querySelector('.answer-page--incorrect');
 const resultPage = document.querySelector('.result-page');
 
-const socket = io('http://10.8.200.119:8787/');
+const socket = io('http://localhost:8787');
 
 let allowAnswer = false;
 
@@ -17,7 +17,8 @@ const storage = {
   },
   set: (key, value) => {
     localStorage.setItem(key, value);
-  }
+  },
+  remove: key => localStorage.removeItem(key)
 }
 
 const handlePage = (page) => {
@@ -36,10 +37,12 @@ const showRank = (rank) => {
   rankField.forEach(field => field.textContent = rank);
 }
 
-const setUserDisplayOnPages = () => {
+const showPlayerInfo = () => {
   const user = JSON.parse(storage.get('user'));
   const userNameField = document.querySelectorAll('.user__name');
   const userIdField = document.querySelectorAll('.user__id');
+  const userName = document.querySelector('.waiting-page__name');
+  userName.textContent = user.name;
   userNameField.forEach(elmt => elmt.textContent = user.name);
   userIdField.forEach(elmt => elmt.textContent = user.id);
 }
@@ -51,45 +54,50 @@ const showQuestionNumber = (current, all) => {
   questionAll.forEach(item => item.textContent = all);
 }
 
+/** 答題後答案卡的顯示 */
 const setSelectedCardStyle = (cardIndex) => {
   const cardColors = ['rgb(247, 3, 32)', 'rgb(0, 94, 215)', 'rgb(226, 158, 6)', 'rgb(0, 145, 13)'];
   const cardIcons = ['spades', 'hearts', 'clubs', 'diamonds'];
   const card = document.querySelector('.selected-card');
   const cardIcon = document.querySelector('#card-icon');
-  card.style.backgroundColor = cardColors[cardIndex];
-  cardIcon.setAttribute('src', `assets/img/${cardIcons[cardIndex]}.png`);
+  let index;
+  switch(cardIndex) {
+    case 'A':
+      index = 0;
+      break;
+    case 'B':
+      index = 1;
+      break;
+    case 'C':
+      index = 2;
+      break;
+    case 'D':
+      index = 3;
+      break;
+    default: return;
+  }
+  card.style.backgroundColor = cardColors[index];
+  cardIcon.setAttribute('src', `assets/img/${cardIcons[index]}.png`);
 }
 
 const answerSelected = (ans) => {
   if (!allowAnswer || storage.get('currentAnswer')) {
+    alert('目前無法進行作答');
     return;
   }
-
   const finishAnsweringTime = Date.now();
-  let answer = '';
-  switch (ans) {
-    case 0:
-      answer = 'A';
-      break;
-    case 1:
-      answer = 'B';
-      break;
-    case 2:
-      answer = 'C';
-      break;
-    case 3:
-      answer = 'D';
-      break;
-  }
   const startAnsweringTime = storage.get('startAnsweringTime');
-  const speed = finishAnsweringTime - startAnsweringTime;
+  let speed = finishAnsweringTime - startAnsweringTime;
+  if (speed > 15000) {
+    speed = 15000;
+  }
   const submitData = {
-    questNo: storage.get('questNo'),
+    questNo: storage.get('currentQuestNo'),
     playerId: JSON.parse(storage.get('user')).id,
-    answer: answer,
+    answer: ans,
     speed: speed
   }
-  storage.set('currentAnswer', answer);
+  storage.set('currentAnswer', ans);
   /** Client 提交答案 */
   socket.emit('client.submitAnswer', submitData);
   setSelectedCardStyle(ans);
@@ -103,14 +111,19 @@ const showQuizAnswer = (data) => {
   const userData = data.players.find(player => player.id === userId);
   showScore(userData.score);
   showRank(userData.rank);
+  storage.set('currentScore', userData.score);
+  storage.set('currentRank', userData.rank);
   if (data.currentQuestNo === data.questionCount) {
     handlePage(resultPage);
+    storage.set('currentPage', 'resultPage');
     return;
   }
   if (data.answer === storage.get('currentAnswer')) {
     handlePage(correctPage);
+    storage.set('currentPage', 'correctPage');
   } else {
     handlePage(incorrectPage);
+    storage.set('currentPage', 'incorrectPage');
   }
 }
 
@@ -118,26 +131,25 @@ const showQuizOptions = (data) => {
   if (!storage.get('user')) {
     return;
   }
-
   allowAnswer = true;
 
   const { currentQuestNo, questionCount } = data;
-  handlePage(answeringPage);
   const startAnsweringTime = Date.now();
-  storage.set('startAnsweringTime', startAnsweringTime);
+  handlePage(answeringPage);
   showQuestionNumber(currentQuestNo, questionCount);
-  storage.set('questNo', currentQuestNo);
+  storage.set('currentPage', 'answeringPage');
+  storage.set('startAnsweringTime', startAnsweringTime);
+  storage.set('currentQuestNo', currentQuestNo);
   storage.set('totalQuestNum', questionCount);
-  localStorage.removeItem('currentAnswer');
+  storage.remove('currentAnswer');
 }
 
 const waitingForOtherUsers = () => {
   if (!storage.get('user')) {
     return;
   }
-  const userName = document.querySelector('.waiting-page__name');
   handlePage(waitingPage);
-  userName.textContent = JSON.parse(storage.get('user')).name;
+  storage.set('currentPage', 'waitingPage');
 }
 
 const waitForQuizToShow = () => {
@@ -145,28 +157,41 @@ const waitForQuizToShow = () => {
     return;
   }
   handlePage(questionPage);
+  storage.set('currentPage', 'questionPage');
 }
 
 const waitForQuizAnswer = () => {
   if (!storage.get('user')) {
     return;
   }
-  handlePage(selectedPage)
+  handlePage(selectedPage);
+  storage.set('currentPage', 'selectedPage');
 }
 
-const initialRegisterPage = () => {
+const showJoinForm = (allowJoin) => {
+  const userNameInputField = document.querySelector('#user-name-input');
+  const userIdInputField = document.querySelector('#user-id-input');
+  userNameInputField.disabled = !allowJoin;
+  userIdInputField.disabled = !allowJoin;
+  storage.set('allowJoinGame', allowJoin);
+
+  const registerForm = document.querySelector('.register-form');
+  const waitingConnectionMessage = document.querySelector('#waiting-connection-message');
+  waitingConnectionMessage.style.display = allowJoin ? 'none' : 'block';
+  registerForm.style.display = allowJoin ? 'block' : 'none';
+}
+
+const renderRegisterPage = () => {
   const userNameInputField = document.querySelector('#user-name-input');
   const userIdInputField = document.querySelector('#user-id-input');
   const registerButton = document.querySelector('#register-button');
-  const registerForm = document.querySelector('.register-form');
-  const waitingConnectionMessage = document.querySelector('#waiting-connection-message');
 
   const inputEvent = () => {
     registerButton.disabled = userNameInputField.value === '' || userIdInputField.value === '';
   }
 
   const registerEvent = () => {
-    if (!Boolean(storage.get('allowJoinGame'))) {
+    if (!Boolean(storage.get('allowJoinGame')) || storage.get('user')) {
       return;
     }
 
@@ -175,7 +200,7 @@ const initialRegisterPage = () => {
       name: userNameInputField.value
     };
     storage.set('user', JSON.stringify(user));
-    setUserDisplayOnPages();
+    showPlayerInfo();
     const socketJoin = socket.emit('client.joinGame', user);
     if (socketJoin.disconnected) {
       alert('失去連線');
@@ -186,33 +211,66 @@ const initialRegisterPage = () => {
   }
 
   handlePage(registerPage);
-  /** 等待遊戲允許加入 */
-  socket.on('client.waitForAllowJoinGame', () => {
-    waitingConnectionMessage.style.display = 'none';
-    registerForm.style.display = 'block';
-    userNameInputField.disabled = false;
-    userIdInputField.disabled = false;
-  });
+  storage.set('currentPage', 'registerPage');
   userNameInputField.addEventListener('input', inputEvent);
   userIdInputField.addEventListener('input', inputEvent);
   registerButton.addEventListener('click', registerEvent);
 }
 
+const getLastStatusPage = () => {
+  const lastStatus = storage.get('currentPage');
+  switch(lastStatus) {
+    case 'registerPage': 
+      return registerPage;
+    case 'waitingPage': 
+      return waitingPage;
+    case 'questionPage': 
+      return questionPage;
+    case 'answeringPage': 
+      return answeringPage;
+    case 'selectedPage': 
+      return selectedPage;
+    case 'correctPage': 
+      return correctPage;
+    case 'incorrectPage': 
+      return incorrectPage;
+    case 'resultPage': 
+      return resultPage;
+  }
+}
+
+const returnToLastStatus = () => {
+  showPlayerInfo();
+  showScore(storage.get('currentScore'));
+  showRank(storage.get('currentRank'));
+  showQuestionNumber(storage.get('currentQuestNo'), storage.get('totalQuestNum'));
+  setSelectedCardStyle(storage.get('currentAnswer'));
+  handlePage(getLastStatusPage());
+}
+
 const app = () => {
   const user = JSON.parse(storage.get('user'));
-  socket.emit('client.connection', user && user.id || '');
-  initialRegisterPage();
+  if (!user) {
+    renderRegisterPage();
+  } else {
+    returnToLastStatus();
+  }
 
-  socket.on('client.connection', allowJoinGame => {
-    const userNameInputField = document.querySelector('#user-name-input');
-    const userIdInputField = document.querySelector('#user-id-input');
-    userNameInputField.disabled = !allowJoinGame;
-    userIdInputField.disabled = !allowJoinGame;
-    storage.set('allowJoinGame', allowJoinGame);
+  /** 建立連線，向server發送user id */
+  socket.on('connect', () => {
+    socket.emit('client.connection', user && user.id || '');
   });
-
+  /** 當連線建立時， */
+  socket.on('client.connection', allowJoin => showJoinForm(allowJoin));
+  /** 等待遊戲允許加入 */
+  socket.on('client.waitForAllowJoinGame', () => showJoinForm(true));
   /** Client 加入遊戲失敗 */
-  socket.on('client.joinGameFail', () => alert('加入失敗'));
+  socket.on('client.joinGameFail', () => {
+    const currentUser = storage.get('user');
+    alert(`員工編號 ${currentUser.id} 已存在，請重新輸入`);
+    localStorage.clear();
+    location.reload();
+  });
   /** Client 加入遊戲後，等待遊戲開始 */
   socket.on('client.waitForGameToStart', waitingForOtherUsers);
   /** 遊戲開始後，等待題目顯示 */
@@ -225,12 +283,11 @@ const app = () => {
   socket.on('client.waitForQuizAnswer', waitForQuizAnswer);
   /** 顯示 Client 的答題結果 */
   socket.on('client.showQuizAnswer', recievedData => showQuizAnswer(recievedData));
-
+  /** 當server reload */
   socket.on('client.destroy', () => {
     localStorage.clear();
     location.reload();
   });
-
   socket.on('disconnect', () => {
     location.reload();
   });
