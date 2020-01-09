@@ -21,18 +21,43 @@ const storage = {
   remove: key => localStorage.removeItem(key)
 }
 
-const handlePage = (page) => {
+const handlePage = page => {
   const pages = document.querySelectorAll('.page');
   pages.forEach(page => page.classList.remove('show-page'));
   page.classList.add('show-page');
+  const currentPage = setCurrentPage(page);
+  storage.set('currentPage', currentPage);
 }
 
-const showScore = (score) => {
+const setCurrentPage = page => {
+  switch (page) {
+    case registerPage:
+      return 'registerPage';
+    case waitingPage:
+      return 'waitingPage';
+    case questionPage:
+      return 'questionPage';
+    case answeringPage:
+      return 'answeringPage';
+    case selectedPage:
+      return 'selectedPage';
+    case correctPage:
+      return 'correctPage';
+    case incorrectPage:
+      return 'incorrectPage';
+    case resultPage:
+      return 'resultPage';
+    default:
+      return;
+  }
+}
+
+const showScore = score => {
   const scoreField = document.querySelectorAll('.score');
   scoreField.forEach(field => field.textContent = score);
 }
 
-const showRank = (rank) => {
+const showRank = rank => {
   const rankField = document.querySelectorAll('.rank');
   rankField.forEach(field => field.textContent = rank);
 }
@@ -54,8 +79,8 @@ const showQuestionNumber = (current, all) => {
   questionAll.forEach(item => item.textContent = all);
 }
 
-/** 答題後答案卡的顯示 */
-const setSelectedCardStyle = (cardIndex) => {
+/** 答題後答案卡的樣式 */
+const setSelectedCardStyle = cardIndex => {
   const cardColors = ['rgb(247, 3, 32)', 'rgb(0, 94, 215)', 'rgb(226, 158, 6)', 'rgb(0, 145, 13)'];
   const cardIcons = ['spades', 'hearts', 'clubs', 'diamonds'];
   const card = document.querySelector('.selected-card');
@@ -74,13 +99,14 @@ const setSelectedCardStyle = (cardIndex) => {
     case 'D':
       index = 3;
       break;
-    default: return;
+    default: 
+      return;
   }
   card.style.backgroundColor = cardColors[index];
   cardIcon.setAttribute('src', `assets/img/${cardIcons[index]}.png`);
 }
 
-const answerSelected = (ans) => {
+const answerSelected = ans => {
   if (!allowAnswer || storage.get('currentAnswer')) {
     alert('目前無法進行作答');
     return;
@@ -103,7 +129,7 @@ const answerSelected = (ans) => {
   setSelectedCardStyle(ans);
 }
 
-const showQuizAnswer = (data) => {
+const showQuizAnswer = data => {
   if (!storage.get('user')) {
     return;
   }
@@ -115,19 +141,16 @@ const showQuizAnswer = (data) => {
   storage.set('currentRank', userData.rank);
   if (data.currentQuestNo === data.questionCount) {
     handlePage(resultPage);
-    storage.set('currentPage', 'resultPage');
     return;
   }
   if (data.answer === storage.get('currentAnswer')) {
     handlePage(correctPage);
-    storage.set('currentPage', 'correctPage');
   } else {
     handlePage(incorrectPage);
-    storage.set('currentPage', 'incorrectPage');
   }
 }
 
-const showQuizOptions = (data) => {
+const showQuizOptions = data => {
   if (!storage.get('user')) {
     return;
   }
@@ -137,7 +160,6 @@ const showQuizOptions = (data) => {
   const startAnsweringTime = Date.now();
   handlePage(answeringPage);
   showQuestionNumber(currentQuestNo, questionCount);
-  storage.set('currentPage', 'answeringPage');
   storage.set('startAnsweringTime', startAnsweringTime);
   storage.set('currentQuestNo', currentQuestNo);
   storage.set('totalQuestNum', questionCount);
@@ -149,7 +171,6 @@ const waitingForOtherUsers = () => {
     return;
   }
   handlePage(waitingPage);
-  storage.set('currentPage', 'waitingPage');
 }
 
 const waitForQuizToShow = () => {
@@ -157,7 +178,6 @@ const waitForQuizToShow = () => {
     return;
   }
   handlePage(questionPage);
-  storage.set('currentPage', 'questionPage');
 }
 
 const waitForQuizAnswer = () => {
@@ -165,10 +185,9 @@ const waitForQuizAnswer = () => {
     return;
   }
   handlePage(selectedPage);
-  storage.set('currentPage', 'selectedPage');
 }
 
-const showJoinForm = (allowJoin) => {
+const showJoinForm = allowJoin => {
   const userNameInputField = document.querySelector('#user-name-input');
   const userIdInputField = document.querySelector('#user-id-input');
   userNameInputField.disabled = !allowJoin;
@@ -191,7 +210,7 @@ const renderRegisterPage = () => {
   }
 
   const registerEvent = () => {
-    if (!Boolean(storage.get('allowJoinGame')) || storage.get('user')) {
+    if (!JSON.parse(storage.get('allowJoinGame'))) {
       return;
     }
 
@@ -199,19 +218,18 @@ const renderRegisterPage = () => {
       id: userIdInputField.value,
       name: userNameInputField.value
     };
-    storage.set('user', JSON.stringify(user));
-    showPlayerInfo();
     const socketJoin = socket.emit('client.joinGame', user);
     if (socketJoin.disconnected) {
       alert('失去連線');
       return;
     }
+    storage.set('user', JSON.stringify(user));
+    showPlayerInfo();
     registerButton.disabled = true;
     document.querySelector('.hollow-dots-spinner').style.display = 'block';
   }
 
   handlePage(registerPage);
-  storage.set('currentPage', 'registerPage');
   userNameInputField.addEventListener('input', inputEvent);
   userIdInputField.addEventListener('input', inputEvent);
   registerButton.addEventListener('click', registerEvent);
@@ -220,8 +238,6 @@ const renderRegisterPage = () => {
 const getLastStatusPage = () => {
   const lastStatus = storage.get('currentPage');
   switch(lastStatus) {
-    case 'registerPage': 
-      return registerPage;
     case 'waitingPage': 
       return waitingPage;
     case 'questionPage': 
@@ -236,10 +252,16 @@ const getLastStatusPage = () => {
       return incorrectPage;
     case 'resultPage': 
       return resultPage;
+    default:
+      return registerPage;
   }
 }
 
 const returnToLastStatus = () => {
+  if (!storage.get('currentPage')) {
+    localStorage.clear();
+    location.reload();
+  }
   showPlayerInfo();
   showScore(storage.get('currentScore'));
   showRank(storage.get('currentRank'));
@@ -250,6 +272,7 @@ const returnToLastStatus = () => {
 
 const app = () => {
   const user = JSON.parse(storage.get('user'));
+  /** 當 storage 中存在 user 資料時，自 storage 中回復先前遊戲資料 */
   if (!user) {
     renderRegisterPage();
   } else {
@@ -266,8 +289,7 @@ const app = () => {
   socket.on('client.waitForAllowJoinGame', () => showJoinForm(true));
   /** Client 加入遊戲失敗 */
   socket.on('client.joinGameFail', () => {
-    const currentUser = storage.get('user');
-    alert(`員工編號 ${currentUser.id} 已存在，請重新輸入`);
+    alert(`員工編號 ${document.querySelector('#user-id-input').value} 已存在，請重新輸入`);
     localStorage.clear();
     location.reload();
   });
