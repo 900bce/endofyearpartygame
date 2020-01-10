@@ -7,8 +7,7 @@ const correctPage = document.querySelector('.answer-page--correct');
 const incorrectPage = document.querySelector('.answer-page--incorrect');
 const resultPage = document.querySelector('.result-page');
 
-const socket = io('http://localhost:8787');
-
+let socket;
 let allowAnswer = false;
 
 const storage = {
@@ -111,6 +110,7 @@ const answerSelected = ans => {
     alert('目前無法進行作答');
     return;
   }
+  storage.set("currentAnswer", ans);
   const finishAnsweringTime = Date.now();
   const startAnsweringTime = storage.get('startAnsweringTime');
   let speed = finishAnsweringTime - startAnsweringTime;
@@ -123,7 +123,6 @@ const answerSelected = ans => {
     answer: ans,
     speed: speed
   }
-  storage.set('currentAnswer', ans);
   /** Client 提交答案 */
   socket.emit('client.submitAnswer', submitData);
   setSelectedCardStyle(ans);
@@ -166,12 +165,12 @@ const showQuizOptions = data => {
   storage.remove('currentAnswer');
 }
 
-const waitingForOtherUsers = () => {
-  if (!storage.get('user')) {
-    return;
-  }
-  handlePage(waitingPage);
-}
+// const waitingForOtherUsers = () => {
+//   if (!storage.get('user')) {
+//     return;
+//   }
+//   handlePage(waitingPage);
+// }
 
 const waitForQuizToShow = () => {
   if (!storage.get('user')) {
@@ -218,15 +217,16 @@ const renderRegisterPage = () => {
       id: userIdInputField.value,
       name: userNameInputField.value
     };
+    storage.set("user", JSON.stringify(user));
     const socketJoin = socket.emit('client.joinGame', user);
     if (socketJoin.disconnected) {
       alert('失去連線');
       return;
     }
-    storage.set('user', JSON.stringify(user));
     showPlayerInfo();
     registerButton.disabled = true;
     document.querySelector('.hollow-dots-spinner').style.display = 'block';
+    handlePage(waitingPage);
   }
 
   handlePage(registerPage);
@@ -271,6 +271,19 @@ const returnToLastStatus = () => {
 }
 
 const app = () => {
+
+  try {
+    socket = io("http://localhost:8787");
+  } catch (exception) {
+    document.querySelector(
+      ".register-bottom__notice"
+    ).innerHTML = `沒有連線，請
+      <span onclick="location.reload()" style="text-decoration: underline">
+        重新載入頁面
+      </span>`;
+    alert("沒有連線，請重新整理頁面");
+  }
+
   const user = JSON.parse(storage.get('user'));
   /** 當 storage 中存在 user 資料時，自 storage 中回復先前遊戲資料 */
   if (!user) {
@@ -294,7 +307,7 @@ const app = () => {
     location.reload();
   });
   /** Client 加入遊戲後，等待遊戲開始 */
-  socket.on('client.waitForGameToStart', waitingForOtherUsers);
+  // socket.on('client.waitForGameToStart', waitingForOtherUsers);
   /** 遊戲開始後，等待題目顯示 */
   socket.on('client.waitForQuizToShow', waitForQuizToShow);
   /** 題目顯示後，Client 進入作答介面 */
