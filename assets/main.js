@@ -1,12 +1,3 @@
-const registerPage = document.querySelector('.register-page');
-const waitingPage = document.querySelector('.waiting-page');
-const questionPage = document.querySelector('.question-page');
-const answeringPage = document.querySelector('.game-page');
-const selectedPage = document.querySelector('.selected-page');
-const correctPage = document.querySelector('.answer-page--correct');
-const incorrectPage = document.querySelector('.answer-page--incorrect');
-const resultPage = document.querySelector('.result-page');
-
 let socket;
 let allowAnswer = false;
 
@@ -21,44 +12,24 @@ const storage = {
 }
 
 const handlePage = page => {
-  const pages = document.querySelectorAll('.page');
-  pages.forEach(page => page.classList.remove('show-page'));
-  page.classList.add('show-page');
-  const currentPage = setCurrentPage(page);
-  storage.set('currentPage', currentPage);
+  return document.querySelector(`.${page}`);
 }
 
-const setCurrentPage = page => {
-  switch (page) {
-    case registerPage:
-      return 'registerPage';
-    case waitingPage:
-      return 'waitingPage';
-    case questionPage:
-      return 'questionPage';
-    case answeringPage:
-      return 'answeringPage';
-    case selectedPage:
-      return 'selectedPage';
-    case correctPage:
-      return 'correctPage';
-    case incorrectPage:
-      return 'incorrectPage';
-    case resultPage:
-      return 'resultPage';
-    default:
-      return;
+const handlePageSwitch = page => {
+  if (!storage.get('user') && page !== 'register-page') {
+    return;
   }
+  const allPages = document.querySelectorAll('.page');
+  allPages.forEach(page => page.classList.remove('show-page'));
+  handlePage(page).classList.add('show-page');
+  storage.set('currentPage', page);
 }
 
-const showScore = score => {
+const showScore = (score, rank) => {
   const scoreField = document.querySelectorAll('.score');
-  scoreField.forEach(field => field.textContent = score);
-}
-
-const showRank = rank => {
   const rankField = document.querySelectorAll('.rank');
   rankField.forEach(field => field.textContent = rank);
+  scoreField.forEach(field => field.textContent = score);
 }
 
 const showPlayerInfo = () => {
@@ -124,8 +95,13 @@ const answerSelected = ans => {
     speed: speed
   }
   /** Client 提交答案 */
-  socket.emit('client.submitAnswer', submitData);
+  const submitAns = socket.emit('client.submitAnswer', submitData);
+  if (submitAns.disconnected) {
+    alert('失去連線');
+    return;
+  }
   setSelectedCardStyle(ans);
+  handlePageSwitch('selected-page');
 }
 
 const showQuizAnswer = data => {
@@ -134,18 +110,17 @@ const showQuizAnswer = data => {
   }
   const userId = JSON.parse(storage.get('user')).id;
   const userData = data.players.find(player => player.id === userId);
-  showScore(userData.score);
-  showRank(userData.rank);
+  showScore(userData.score, userData.rank);
   storage.set('currentScore', userData.score);
   storage.set('currentRank', userData.rank);
   if (data.currentQuestNo === data.questionCount) {
-    handlePage(resultPage);
+    handlePageSwitch('result-page');
     return;
   }
   if (data.answer === storage.get('currentAnswer')) {
-    handlePage(correctPage);
+    handlePageSwitch('answer-page--correct');
   } else {
-    handlePage(incorrectPage);
+    handlePageSwitch('answer-page--incorrect');
   }
 }
 
@@ -157,33 +132,12 @@ const showQuizOptions = data => {
 
   const { currentQuestNo, questionCount } = data;
   const startAnsweringTime = Date.now();
-  handlePage(answeringPage);
+  handlePageSwitch('game-page');
   showQuestionNumber(currentQuestNo, questionCount);
   storage.set('startAnsweringTime', startAnsweringTime);
   storage.set('currentQuestNo', currentQuestNo);
   storage.set('totalQuestNum', questionCount);
   storage.remove('currentAnswer');
-}
-
-// const waitingForOtherUsers = () => {
-//   if (!storage.get('user')) {
-//     return;
-//   }
-//   handlePage(waitingPage);
-// }
-
-const waitForQuizToShow = () => {
-  if (!storage.get('user')) {
-    return;
-  }
-  handlePage(questionPage);
-}
-
-const waitForQuizAnswer = () => {
-  if (!storage.get('user')) {
-    return;
-  }
-  handlePage(selectedPage);
 }
 
 const showJoinForm = allowJoin => {
@@ -225,36 +179,13 @@ const renderRegisterPage = () => {
     }
     showPlayerInfo();
     registerButton.disabled = true;
-    document.querySelector('.hollow-dots-spinner').style.display = 'block';
-    handlePage(waitingPage);
+    handlePageSwitch('waiting-page');
   }
 
-  handlePage(registerPage);
+  handlePageSwitch('register-page');
   userNameInputField.addEventListener('input', inputEvent);
   userIdInputField.addEventListener('input', inputEvent);
   registerButton.addEventListener('click', registerEvent);
-}
-
-const getLastStatusPage = () => {
-  const lastStatus = storage.get('currentPage');
-  switch(lastStatus) {
-    case 'waitingPage': 
-      return waitingPage;
-    case 'questionPage': 
-      return questionPage;
-    case 'answeringPage': 
-      return answeringPage;
-    case 'selectedPage': 
-      return selectedPage;
-    case 'correctPage': 
-      return correctPage;
-    case 'incorrectPage': 
-      return incorrectPage;
-    case 'resultPage': 
-      return resultPage;
-    default:
-      return registerPage;
-  }
 }
 
 const returnToLastStatus = () => {
@@ -263,11 +194,10 @@ const returnToLastStatus = () => {
     location.reload();
   }
   showPlayerInfo();
-  showScore(storage.get('currentScore'));
-  showRank(storage.get('currentRank'));
+  showScore(storage.get('currentScore'), storage.get('currentRank'));
   showQuestionNumber(storage.get('currentQuestNo'), storage.get('totalQuestNum'));
   setSelectedCardStyle(storage.get('currentAnswer'));
-  handlePage(getLastStatusPage());
+  handlePageSwitch(storage.get('currentPage'));
 }
 
 const app = () => {
@@ -277,15 +207,15 @@ const app = () => {
   } catch (exception) {
     document.querySelector(
       ".register-bottom__notice"
-    ).innerHTML = `沒有連線，請
+    ).innerHTML = `沒有連線，請嘗試
       <span onclick="location.reload()" style="text-decoration: underline">
         重新載入頁面
       </span>`;
-    alert("沒有連線，請重新整理頁面");
+    handlePageSwitch('register-page');
   }
 
-  const user = JSON.parse(storage.get('user'));
   /** 當 storage 中存在 user 資料時，自 storage 中回復先前遊戲資料 */
+  const user = JSON.parse(storage.get('user'));
   if (!user) {
     renderRegisterPage();
   } else {
@@ -294,7 +224,11 @@ const app = () => {
 
   /** 建立連線，向server發送user id */
   socket.on('connect', () => {
-    socket.emit('client.connection', user && user.id || '');
+    const socketConnection = socket.emit('client.connection', user && user.id || '');
+    if (socketConnection.disconnected) {
+      alert('失去連線');
+      return;
+    }
   });
   /** 當連線建立時， */
   socket.on('client.connection', allowJoin => showJoinForm(allowJoin));
@@ -309,13 +243,13 @@ const app = () => {
   /** Client 加入遊戲後，等待遊戲開始 */
   // socket.on('client.waitForGameToStart', waitingForOtherUsers);
   /** 遊戲開始後，等待題目顯示 */
-  socket.on('client.waitForQuizToShow', waitForQuizToShow);
+  socket.on('client.waitForQuizToShow', () => handlePageSwitch('question-page'));
   /** 題目顯示後，Client 進入作答介面 */
   socket.on('client.showQuizOptions', data => showQuizOptions(data));
   /** Client 提交答案失敗 */
   socket.on('client.submitAnswerFail', () => alert('提交答案失敗'));
   /** Client 提交答案後，進入答案等待頁 */
-  socket.on('client.waitForQuizAnswer', waitForQuizAnswer);
+  // socket.on('client.waitForQuizAnswer', waitForQuizAnswer);
   /** 顯示 Client 的答題結果 */
   socket.on('client.showQuizAnswer', recievedData => showQuizAnswer(recievedData));
   /** 當server reload */
