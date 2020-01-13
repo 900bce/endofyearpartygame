@@ -8,11 +8,24 @@ const storage = {
   set: (key, value) => {
     localStorage.setItem(key, value);
   },
-  remove: key => localStorage.removeItem(key)
+  remove: key => localStorage.removeItem(key),
+  clear: () => {
+    localStorage.clear();
+    location.reload();
+  }
 }
 
-const handlePage = page => {
+const handlePageDOM = page => {
   return document.querySelector(`.${page}`);
+}
+
+const handlePageToShow = page => {
+  if (!handlePageDOM(page)) {
+    storage.set("currentPage", "register-page");
+    location.reload();
+  }
+  handlePageDOM(page).classList.add('show-page');
+  storage.set('currentPage', page);
 }
 
 const handlePageSwitch = page => {
@@ -21,8 +34,7 @@ const handlePageSwitch = page => {
   }
   const allPages = document.querySelectorAll('.page');
   allPages.forEach(page => page.classList.remove('show-page'));
-  handlePage(page).classList.add('show-page');
-  storage.set('currentPage', page);
+  handlePageToShow(page);
 }
 
 const showScore = (score, rank) => {
@@ -49,7 +61,7 @@ const showQuestionNumber = (current, all) => {
   questionAll.forEach(item => item.textContent = all);
 }
 
-/** 答題後答案卡的樣式 */
+/** 答題後答案卡片的樣式 */
 const setSelectedCardStyle = cardIndex => {
   const cardColors = ['rgb(247, 3, 32)', 'rgb(0, 94, 215)', 'rgb(226, 158, 6)', 'rgb(0, 145, 13)'];
   const cardIcons = ['spades', 'hearts', 'clubs', 'diamonds'];
@@ -128,6 +140,7 @@ const showQuizOptions = data => {
   if (!storage.get('user')) {
     return;
   }
+  
   allowAnswer = true;
 
   const { currentQuestNo, questionCount } = data;
@@ -166,20 +179,27 @@ const renderRegisterPage = () => {
     if (!JSON.parse(storage.get('allowJoinGame'))) {
       return;
     }
-
     const user = {
       id: userIdInputField.value,
       name: userNameInputField.value
     };
-    storage.set("user", JSON.stringify(user));
-    const socketJoin = socket.emit('client.joinGame', user);
-    if (socketJoin.disconnected) {
-      alert('失去連線');
-      return;
-    }
-    showPlayerInfo();
-    registerButton.disabled = true;
-    handlePageSwitch('waiting-page');
+    joinGame(user)
+      .then(result => {
+        if (!result) {
+          return;
+        }
+        showPlayerInfo();
+        handlePageSwitch("waiting-page");
+      }).catch(err => alert(err));
+    // storage.set("user", JSON.stringify(user));
+    // const socketJoin = socket.emit('client.joinGame', user);
+    // if (socketJoin.disconnected) {
+    //   alert('失去連線');
+    //   return;
+    // }
+    // showPlayerInfo();
+    // registerButton.disabled = true;
+    // handlePageSwitch('waiting-page');
   }
 
   handlePageSwitch('register-page');
@@ -188,9 +208,20 @@ const renderRegisterPage = () => {
   registerButton.addEventListener('click', registerEvent);
 }
 
+const joinGame = user =>
+  new Promise((resolve, reject) => {
+    storage.set("user", JSON.stringify(user));
+    const socketJoin = socket.emit("client.joinGame", user);
+    if (socketJoin.disconnected) {
+      reject("失去連線");
+      return;
+    }
+    socket.on("client.joinGame", resolve);
+  });
+
 const returnToLastStatus = () => {
   if (!storage.get('currentPage')) {
-    localStorage.clear();
+    storage.set('currentPage', 'register-page');
     location.reload();
   }
   showPlayerInfo();
@@ -207,18 +238,32 @@ const app = () => {
   } catch (exception) {
     document.querySelector(
       ".register-bottom__notice"
-    ).innerHTML = `沒有連線，請嘗試
-      <span onclick="location.reload()" style="text-decoration: underline">
-        重新載入頁面
-      </span>`;
+    ).innerHTML = `連線失敗，請
+      <button 
+        onclick="location.reload()" 
+        style="padding: .3rem .5rem; 
+          font-size: 1.2rem;
+          border-radius: 5px;
+          border: none;" >
+        重新連線
+      </button>`;
     handlePageSwitch('register-page');
   }
 
-  /** 當 storage 中存在 user 資料時，自 storage 中回復先前遊戲資料 */
+  /** 當 storage 中存在 user 資料時，取出 storage 中先前遊戲資料以回復 */
   const user = JSON.parse(storage.get('user'));
   if (!user) {
     renderRegisterPage();
   } else {
+    document.querySelector('.register-bottom__notice').innerHTML = `
+    <button 
+      onclick="storage.clear()" 
+      style="padding: .3rem .7rem; 
+        font-size: 1.2rem;
+        border-radius: 5px;
+        border: none;" >
+      重新連線
+    </button>`;
     returnToLastStatus();
   }
 
@@ -226,7 +271,7 @@ const app = () => {
   socket.on('connect', () => {
     const socketConnection = socket.emit('client.connection', user && user.id || '');
     if (socketConnection.disconnected) {
-      alert('失去連線');
+      alert('連線失敗');
       return;
     }
   });
@@ -237,25 +282,19 @@ const app = () => {
   /** Client 加入遊戲失敗 */
   socket.on('client.joinGameFail', () => {
     alert(`員工編號 ${document.querySelector('#user-id-input').value} 已存在，請重新輸入`);
-    localStorage.clear();
-    location.reload();
+    storage.clear();
   });
-  /** Client 加入遊戲後，等待遊戲開始 */
-  // socket.on('client.waitForGameToStart', waitingForOtherUsers);
   /** 遊戲開始後，等待題目顯示 */
   socket.on('client.waitForQuizToShow', () => handlePageSwitch('question-page'));
   /** 題目顯示後，Client 進入作答介面 */
   socket.on('client.showQuizOptions', data => showQuizOptions(data));
   /** Client 提交答案失敗 */
   socket.on('client.submitAnswerFail', () => alert('提交答案失敗'));
-  /** Client 提交答案後，進入答案等待頁 */
-  // socket.on('client.waitForQuizAnswer', waitForQuizAnswer);
   /** 顯示 Client 的答題結果 */
   socket.on('client.showQuizAnswer', recievedData => showQuizAnswer(recievedData));
   /** 當server reload */
   socket.on('client.destroy', () => {
-    localStorage.clear();
-    location.reload();
+    storage.clear();
   });
   socket.on('disconnect', () => {
     location.reload();
