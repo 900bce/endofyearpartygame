@@ -28,9 +28,8 @@ body {
     height: auto;
     margin-bottom: 3.75rem; }
   .register-page #waiting-connection-message {
+    display: none;
     margin-top: 3rem; }
-  .register-page .register-form {
-    display: none; }
   .register-page .register-input input {
     width: 90%;
     padding: 1rem;

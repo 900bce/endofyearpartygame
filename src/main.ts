@@ -1,7 +1,29 @@
-// const ioUrl = 'http://210.63.38.218:18088';
-const ioUrl = 'http://localhost:8787';
+import * as io from 'socket.io-client';
 
-let socket;
+export class App {
+  ioUrl = 'http://10.8.200.119:8787';
+
+  static get instance() {
+    return this._instance || (this._instance = new this());
+  }
+
+  private static _instance: App;
+
+  m1 = () => {
+    console.log(this.ioUrl);
+  }
+
+  methodName = (params) => {
+    this.m1();
+  }
+  
+}
+
+
+const ioUrl = "http://10.8.200.119:8787";
+
+
+let socket: SocketIOClient.Socket;
 let allowAnswer = false;
 
 const storage = {
@@ -68,7 +90,7 @@ const showQuestionNumber = (current, all) => {
 const setSelectedCardStyle = cardIndex => {
   const cardColors = ['rgb(247, 3, 32)', 'rgb(0, 94, 215)', 'rgb(226, 158, 6)', 'rgb(0, 145, 13)'];
   const cardIcons = ['spades', 'hearts', 'clubs', 'diamonds'];
-  const card = document.querySelector('.selected-card');
+  const card: HTMLDivElement = document.querySelector('.selected-card');
   const cardIcon = document.querySelector('#card-icon');
   let index;
   switch (cardIndex) {
@@ -99,7 +121,7 @@ const answerSelected = ans => {
   storage.set('currentAnswer', ans);
   const finishAnsweringTime = Date.now();
   const startAnsweringTime = storage.get('startAnsweringTime');
-  let speed = finishAnsweringTime - startAnsweringTime;
+  let speed = finishAnsweringTime - +startAnsweringTime;
   if (speed > 15000) {
     speed = 15000;
   }
@@ -156,32 +178,34 @@ const showQuizOptions = data => {
   storage.remove('currentAnswer');
 }
 
-// const showJoinForm = () => {
-//   const userNameInputField = document.querySelector('#user-name-input');
-//   const userIdInputField = document.querySelector('#user-id-input');
-//   userNameInputField.disabled = !allowJoin;
-//   userIdInputField.disabled = !allowJoin;
-//   storage.set('allowJoinGame', allowJoin);
+const showJoinForm = allowJoin => {
+  const userNameInputField: HTMLInputElement = document.querySelector('#user-name-input');
+  const userIdInputField: HTMLInputElement = document.querySelector(
+    "#user-id-input"
+  );
+  userNameInputField.disabled = !allowJoin;
+  userIdInputField.disabled = !allowJoin;
+  storage.set('allowJoinGame', allowJoin);
 
-//   const registerForm = document.querySelector('.register-form');
-//   const waitingConnectionMessage = document.querySelector('#waiting-connection-message');
-//   waitingConnectionMessage.style.display = allowJoin ? 'none' : 'block';
-//   registerForm.style.display = allowJoin ? 'block' : 'none';
-// }
+  const registerForm: HTMLDivElement = document.querySelector(".register-form");
+  const waitingConnectionMessage: HTMLDivElement = document.querySelector('#waiting-connection-message');
+  waitingConnectionMessage.style.display = allowJoin ? 'none' : 'block';
+  registerForm.style.display = allowJoin ? 'block' : 'none';
+}
 
 const renderRegisterPage = () => {
-  const userNameInputField = document.querySelector('#user-name-input');
-  const userIdInputField = document.querySelector('#user-id-input');
-  const registerButton = document.querySelector('#register-button');
+  const userNameInputField: HTMLInputElement = document.querySelector('#user-name-input');
+  const userIdInputField: HTMLInputElement = document.querySelector('#user-id-input');
+  const registerButton: HTMLButtonElement = document.querySelector('#register-button');
 
   const inputEvent = () => {
     registerButton.disabled = userNameInputField.value === '' || userIdInputField.value === '';
   }
 
   const registerEvent = () => {
-    // if (!JSON.parse(storage.get('allowJoinGame'))) {
-    //   return;
-    // }
+    if (!JSON.parse(storage.get('allowJoinGame'))) {
+      return;
+    }
     const user = {
       id: userIdInputField.value,
       name: userNameInputField.value
@@ -192,6 +216,15 @@ const renderRegisterPage = () => {
         handlePageSwitch('waiting-page');
       })
       .catch(err => alert('失去連線'));
+    // storage.set('user', JSON.stringify(user));
+    // const socketJoin = socket.emit('client.joinGame', user);
+    // if (socketJoin.disconnected) {
+    //   alert('失去連線');
+    //   return;
+    // }
+    // showPlayerInfo();
+    // registerButton.disabled = true;
+    // handlePageSwitch('waiting-page');
   }
 
   handlePageSwitch('register-page');
@@ -202,32 +235,15 @@ const renderRegisterPage = () => {
 
 const joinGame = user =>
   new Promise((resolve, reject) => {
-    join(user);
+    storage.set('user', JSON.stringify(user));
+    const socketJoin = socket.emit('client.joinGame', user);
+    if (socketJoin.disconnected) {
+      alert('連線失敗');
+      return;
+    }
     socket.on('client.joinGameFail', reject);
     socket.on('client.waitForGameToStart', resolve);
   });
-
-let count = 0;
-const limit = 5;
-
-const join = (user) => {
-  count += 1;
-
-  if (count > limit) {
-    return;
-  }
-
-  storage.set('user', JSON.stringify(user));
-  const socketJoin = socket.emit('client.joinGame', user);
-
-  if (socketJoin.connected) {
-    return;
-  }
-
-  socket.open();
-  join(user);
-}
-
 
 const returnToLastStatus = () => {
   if (!storage.get('currentPage')) {
@@ -246,10 +262,6 @@ const app = () => {
   try {
     socket = io(ioUrl);
   } catch (exception) {
-    const registerForm = document.querySelector('.register-form');
-    const waitingConnectionMessage = document.querySelector('#waiting-connection-message');
-    waitingConnectionMessage.style.display = 'block';
-    registerForm.style.display = 'none';
     document.querySelector(
       '.register-bottom__notice'
     ).innerHTML = `連線失敗<br>
@@ -269,10 +281,6 @@ const app = () => {
   if (!user) {
     renderRegisterPage();
   } else {
-    const registerForm = document.querySelector('.register-form');
-    const waitingConnectionMessage = document.querySelector('#waiting-connection-message');
-    waitingConnectionMessage.style.display = 'block';
-    registerForm.style.display = 'none';
     document.querySelector('.register-bottom__notice').innerHTML = `
     <button 
       onclick="storage.clear()" 
@@ -288,18 +296,19 @@ const app = () => {
   /** 建立連線，向server發送user id */
   socket.on('connect', () => {
     const socketConnection = socket.emit('client.connection', user && user.id || '');
-    if (socketConnection.connected) {
+    if (socketConnection.disconnected) {
+      alert('連線失敗');
       return;
     }
-    alert('連線失敗');
   });
   /** 當連線建立時， */
-  // socket.on('client.connection', () => showJoinForm());
+  socket.on('client.connection', allowJoin => showJoinForm(allowJoin));
   /** 等待遊戲允許加入 */
   // socket.on('client.waitForAllowJoinGame', () => showJoinForm(true));
   /** Client 加入遊戲失敗 */
   socket.on('client.joinGameFail', () => {
-    alert(`員工編號 ${document.querySelector('#user-id-input').value} 已存在，請重新輸入`);
+    const element: HTMLInputElement = document.querySelector('#user-id-input');
+    alert(`員工編號 ${element ? element.value : '未知'} 已存在，請重新輸入`);
     storage.clear();
   });
   /** 遊戲開始後，等待題目顯示 */

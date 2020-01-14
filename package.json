@@ -18,6 +18,13 @@
   },
   "homepage": "https://github.com/900bce/endofyearpartygame#readme",
   "devDependencies": {
-    "node-sass": "^4.13.0"
+    "@types/node": "^13.1.6",
+    "@types/socket.io-client": "^1.4.32",
+    "node-sass": "^4.13.0",
+    "ts-node": "^8.6.2",
+    "typescript": "^3.7.4"
+  },
+  "dependencies": {
+    "socket.io-client": "^2.3.0"
   }
 }

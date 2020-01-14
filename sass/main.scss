@@ -42,12 +42,13 @@ body {
   }
 
   #waiting-connection-message {
+    display: none;
     margin-top: 3rem;
   }
 
-  .register-form {
-    display: none;
-  }
+  // .register-form {
+  //   display: none;
+  // }
 
   .register-input {
     input {
