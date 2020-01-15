@@ -200,12 +200,17 @@ const renderRegisterPage = () => {
   registerButton.addEventListener('click', registerEvent);
 }
 
-const joinGame = user =>
+const joinGame = user => (
   new Promise((resolve, reject) => {
     join(user);
+    const connectionTimeout = setTimeout(reject, 10000);
     socket.on('client.joinGameFail', reject);
-    socket.on('client.waitForGameToStart', resolve);
-  });
+    socket.on('client.waitForGameToStart', () => {
+      clearTimeout(connectionTimeout);
+      resolve();
+    });
+  })
+)
 
 let count = 0;
 const limit = 5;
