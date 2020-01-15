@@ -204,7 +204,10 @@ const joinGame = user => (
   new Promise((resolve, reject) => {
     join(user);
     const connectionTimeout = setTimeout(reject, 10000);
-    socket.on('client.joinGameFail', reject);
+    socket.on('client.joinGameFail', () => {
+      clearTimeout(connectionTimeout);
+      reject();
+    });
     socket.on('client.waitForGameToStart', () => {
       clearTimeout(connectionTimeout);
       resolve();
