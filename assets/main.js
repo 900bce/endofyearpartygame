@@ -1,5 +1,6 @@
 // const ioUrl = 'http://210.63.38.218:18088';
 const ioUrl = 'http://localhost:8787';
+// const ioUrl = 'http://10.8.200.119:8787';
 
 let socket;
 let allowAnswer = false;
@@ -207,6 +208,7 @@ const joinGame = user =>
     socket.on('client.waitForGameToStart', resolve);
   });
 
+// 最多重試次數
 let count = 0;
 const limit = 5;
 

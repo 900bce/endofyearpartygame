@@ -60,37 +60,6 @@ body {
       .register-page .register-bottom__btn:disabled {
         box-shadow: none;
         background-image: url("./img/mobileWebGoBtnDisable.png"); }
-  .register-page .hollow-dots-spinner {
-    display: none;
-    position: absolute;
-    left: 50%;
-    right: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1000;
-    height: 1rem;
-    width: calc(2rem * 3); }
-  .register-page .hollow-dots-spinner .dot {
-    width: 1rem;
-    height: 1rem;
-    margin: 0 calc(1rem / 2);
-    border: calc(1rem / 5) solid #23bff0;
-    border-radius: 50%;
-    float: left;
-    transform: scale(0);
-    animation: hollow-dots-spinner-animation 1000ms ease infinite 0ms; }
-  .register-page .hollow-dots-spinner .dot:nth-child(1) {
-    animation-delay: calc(300ms * 1); }
-  .register-page .hollow-dots-spinner .dot:nth-child(2) {
-    animation-delay: calc(300ms * 2); }
-  .register-page .hollow-dots-spinner .dot:nth-child(3) {
-    animation-delay: calc(300ms * 3); }
-
-@keyframes hollow-dots-spinner-animation {
-  50% {
-    transform: scale(1);
-    opacity: 1; }
-  100% {
-    opacity: 0; } }
 
 .waiting-page {
   background-color: #23bff0;
