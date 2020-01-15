@@ -201,12 +201,20 @@ const renderRegisterPage = () => {
   registerButton.addEventListener('click', registerEvent);
 }
 
-const joinGame = user =>
+const joinGame = user => (
   new Promise((resolve, reject) => {
     join(user);
-    socket.on('client.joinGameFail', reject);
-    socket.on('client.waitForGameToStart', resolve);
-  });
+    const connectionTimeout = setTimeout(reject, 10000);
+    socket.on('client.joinGameFail', () => {
+      clearTimeout(connectionTimeout);
+      reject();
+    });
+    socket.on('client.waitForGameToStart', () => {
+      clearTimeout(connectionTimeout);
+      resolve();
+    });
+  })
+)
 
 // 最多重試次數
 let count = 0;
