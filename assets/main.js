@@ -1,5 +1,5 @@
-// const ioUrl = 'http://210.63.38.218:18088';
-const ioUrl = 'http://localhost:8787';
+const ioUrl = 'http://210.63.38.218:18088';
+// const ioUrl = 'http://localhost:8787';
 // const ioUrl = 'http://10.8.200.119:8787';
 
 let socket;
@@ -254,7 +254,7 @@ const returnToLastStatus = () => {
 const app = () => {
 
   try {
-    socket = io(ioUrl);
+    socket = io(ioUrl, { reconnectionAttempts: 3 });
   } catch (exception) {
     const registerForm = document.querySelector('.register-form');
     const waitingConnectionMessage = document.querySelector('#waiting-connection-message');
@@ -303,6 +303,37 @@ const app = () => {
     }
     alert('連線失敗');
   });
+
+  socket.on('reconnect_attempt', attemptNumber => {
+    const registerForm = document.querySelector('.register-form');
+    const waitingConnectionMessage = document.querySelector('#waiting-connection-message');
+    waitingConnectionMessage.style.display = 'block';
+    registerForm.style.display = 'none';
+    document.querySelector(
+      '.register-bottom__notice'
+    ).innerHTML = `連線中斷，正在嘗試重新連線 ${attemptNumber}`;
+    handlePageSwitch('register-page');
+  });
+
+  socket.on('reconnect_failed', () => {
+    const registerForm = document.querySelector('.register-form');
+    const waitingConnectionMessage = document.querySelector('#waiting-connection-message');
+    waitingConnectionMessage.style.display = 'block';
+    registerForm.style.display = 'none';
+    document.querySelector(
+      '.register-bottom__notice'
+    ).innerHTML = `連線失敗<br>
+      <button 
+        onclick="location.reload()" 
+        style="padding: .3rem .5rem; 
+          font-size: 1.2rem;
+          border-radius: 5px;
+          border: none;" >
+        重新連線
+      </button>`;
+    handlePageSwitch('register-page');
+  })
+
   /** 當連線建立時， */
   // socket.on('client.connection', () => showJoinForm());
   /** 等待遊戲允許加入 */
