@@ -252,9 +252,10 @@ const returnToLastStatus = () => {
 }
 
 const app = () => {
+  const reconnectLimit = 3;
 
   try {
-    socket = io(ioUrl, { reconnectionAttempts: 3 });
+    socket = io(ioUrl, { reconnectionAttempts: reconnectLimit });
   } catch (exception) {
     const registerForm = document.querySelector('.register-form');
     const waitingConnectionMessage = document.querySelector('#waiting-connection-message');
@@ -311,8 +312,9 @@ const app = () => {
     registerForm.style.display = 'none';
     document.querySelector(
       '.register-bottom__notice'
-    ).innerHTML = `連線中斷，正在嘗試重新連線 ${attemptNumber}`;
+    ).innerHTML = `連線中斷<br>正在嘗試重新連線 (${attemptNumber}/${reconnectLimit})`;
     handlePageSwitch('register-page');
+    console.log('reconnect_attempt');
   });
 
   socket.on('reconnect_failed', () => {
@@ -332,6 +334,7 @@ const app = () => {
         重新連線
       </button>`;
     handlePageSwitch('register-page');
+    console.log('reconnect_failed');
   })
 
   /** 當連線建立時， */
@@ -356,7 +359,8 @@ const app = () => {
     storage.clear();
   });
   socket.on('disconnect', () => {
-    location.reload();
+    // location.reload();
+    console.log('disconnect');
   });
 }
 
